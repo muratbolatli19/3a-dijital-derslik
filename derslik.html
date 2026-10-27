@@ -67,7 +67,7 @@ async function teacherView(){
  return '<div class="panel"><b>📘 '+esc(l.subject)+' · '+esc(l.title)+'</b><p>'+esc(l.outcome)+'</p><p class="lesson-stat">📅 '+esc(l.week_start)+' · '+(l.published?'🟢 Yayında':'🟡 Taslak')+' · '+n+' etkinlik</p>'+
  (n===0?'<p class="status-warn">⚠️ Bu dersin interaktif etkinlikleri henüz hazırlanmamış. Yayınlama tek başına etkinlik oluşturmaz.</p>':'<p class="status-ok">✅ Etkinlik verileri hazır.</p>')+
  '<button data-publish="'+esc(l.id)+'" data-value="'+(!l.published)+'">'+(l.published?'Yayından kaldır':'Yayınla')+'</button>'+
- (n>0?'<a href="kesir-gorevleri-v2.html"><button class="alt" type="button">🚀 Kesir etkinliklerini aç</button></a>':'')+'</div>'
+ (n>0?'<a href="ders-gorevleri.html?lesson='+encodeURIComponent(l.id)+'"><button class="alt" type="button">🚀 '+n+' etkinliği aç</button></a>':'')+'</div>'
  }).join(''):'Henüz ders bulunmuyor.';
  if(actError)msg('Etkinlik sayıları alınamadı: '+actError.message);
  document.querySelectorAll('[data-publish]').forEach(b=>b.onclick=async()=>{const {error}=await db.from('lessons').update({published:b.dataset.value==='true'}).eq('id',b.dataset.publish);msg(error?error.message:'Ders durumu güncellendi.');if(!error)teacherView()});
@@ -82,7 +82,7 @@ $('studentLessons').innerHTML=data?.length?data.map(l=>{
 const n=counts[l.id]||0;
 return '<div class="panel"><h3>📚 '+esc(l.subject)+' · '+esc(l.title)+'</h3><p>'+esc(l.explanation)+'</p>'+
 videoHTML(l.video_url)+'<p class="muted">📅 '+esc(l.week_start)+'</p>'+
-(n>0&&l.subject==='Matematik'?'<a href="kesir-gorevleri-v2.html"><button>🚀 '+n+' Kesir görevini başlat</button></a>':
+(n>0?'<a href="ders-gorevleri.html?lesson='+encodeURIComponent(l.id)+'"><button>🚀 '+n+' görevi başlat</button></a>':
 '<p class="notice">Bu dersin etkinlikleri henüz yayınlanmadı. Konu anlatımını inceleyebilirsiniz.</p>')+'</div>'
 }).join(''):'Henüz yayınlanmış bir ders yok.';
 if(actError)msg('Etkinlik bilgisi alınamadı: '+actError.message);
