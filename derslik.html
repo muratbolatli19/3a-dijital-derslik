@@ -31,7 +31,7 @@ button.danger{background:#b72e55;box-shadow:0 4px 0 #7a1737;color:white}button.d
 <label>Öğrenme Çıktısı Kısa Adı (yalnızca panelde tanımlama için)</label><input id="title" required maxlength="180" placeholder="Bütün, yarım ve çeyrek">
 <label>Öğrenme Çıktısı</label><textarea id="outcome" required placeholder="MAT.3.1.9 ..."></textarea>
 <label>Kısa anlatım</label><textarea id="explanation" placeholder="Öğrencinin okuyacağı açıklama"></textarea>
-<label>Video bağlantısı (isteğe bağlı, doğrudan MP4 veya YouTube)</label><input id="video" type="url" placeholder="https://...">
+<label>Video bağlantısı (isteğe bağlı, doğrudan MP4 veya YouTube)</label><input id="video" type="url" placeholder="https://..."><label>Ya da bilgisayarınızdan MP4/WebM video seçin (en fazla 40 MB)</label><input id="videoFile" type="file" accept="video/mp4,video/webm"><p class="muted">Yalnızca kullanma hakkına sahip olduğunuz videoları yükleyin. Ücretsiz depolama kotası sınırlıdır.</p>
 <button type="submit">Taslak dersi kaydet</button></form><p class="muted">Dersler başlangıçta taslak kalır. Yayınlamak için aşağıdaki listeden Yayınla seçin.</p></div>
 <div class="panel"><h3>Ders yönetimi</h3><div id="teacherLessons"></div><div class="panel" style="background:#fff9ef;border:2px solid #f3dbac"><h3>🗑️ Çöp Kutusu · Geri Yükle</h3><p class="muted">Silinen öğrenme çıktıları ve etkinlikler kalıcı olarak yok edilmez. Öğrenci ilerlemeleri saklanır.</p><div id="trashLessons"></div><div id="trashActivities"></div></div></div>
 <div class="panel"><h3>📊 Öğrenci hesapları ve ilerleme</h3><div class="panel"><h4>👤 Yeni öğrenci hesabı oluştur</h4><p class="muted">Sadece öğretmen yetkisiyle çalışır. Öğrenci kodu 4–8 rakam, ilk şifre en az 12 karakter olmalıdır.</p><div class="grid"><div><label>Öğrenci adı soyadı</label><input id="newStudentName" autocomplete="off" placeholder="Öğrenci adı soyadı"></div><div><label>Öğrenci kodu</label><input id="newStudentCode" autocomplete="off" inputmode="numeric" placeholder="1001"></div><div><label>İlk şifre</label><input id="newStudentPassword" type="password" autocomplete="new-password" placeholder="En az 12 karakter"></div></div><button id="createStudent" type="button">Öğrenci hesabını güvenli oluştur</button><p id="studentActionMessage" aria-live="polite"></p></div><div id="progressSummary" class="grid"></div><div id="progressDetails"></div><p>Gerçek öğrenci profilleri yalnızca yetkili yönetim işleminden sonra oluşturulacaktır. Öğrenci şifrelerini GitHub koduna yazmayın.</p><div id="studentList"></div></div></div>
@@ -57,11 +57,21 @@ $('signin').onclick=async()=>{const {error}=await db.auth.signInWithPassword({em
 $('signup').onclick=async()=>{if($('password').value.length<12){msg('Şifre en az 12 karakter olmalıdır.');return}const {error}=await db.auth.signUp({email:$('email').value.trim(),password:$('password').value});msg(error?error.message:'Hesap isteği alındı. E-posta doğrulamasını yapın; öğretmen yetkisi ayrıca tanımlanmalıdır.')};
 $('reset').onclick=async()=>{const {error}=await db.auth.resetPasswordForEmail($('email').value.trim(),{redirectTo:location.origin+location.pathname});msg(error?error.message:'Sıfırlama e-postası gönderilmesi istendi.')};
 $('logout').onclick=async()=>{await db.auth.signOut();await refresh()};
-$('form').onsubmit=async e=>{e.preventDefault();const obj={author_id:me.id,subject:$('subject').value,week_start:$('week').value,title:$('title').value.trim(),outcome:$('outcome').value.trim(),explanation:$('explanation').value.trim(),video_url:$('video').value.trim()||null,published:false};const {data:created,error}=await db.from('lessons').insert(obj).select('id').single();if(error){msg(error.message)}else{try{const g=await generateForLesson(created.id);msg('Öğrenme Çıktısı kaydedildi; '+g.created+' etkinlik otomatik oluşturuldu.')}catch(e){msg('Öğrenme Çıktısı kaydedildi ancak etkinlik üretimi başarısız: '+e.message)}e.target.reset();await teacherView()}};
+$('form').onsubmit=async e=>{e.preventDefault();const obj={author_id:me.id,subject:$('subject').value,week_start:$('week').value,title:$('title').value.trim(),outcome:$('outcome').value.trim(),explanation:$('explanation').value.trim(),video_url:$('video').value.trim()||null,published:false};try{const file=$('videoFile').files[0];if(file)obj.video_url=await uploadLessonVideo(file)}catch(err){msg(err.message);return}const {data:created,error}=await db.from('lessons').insert(obj).select('id').single();if(error){msg(error.message)}else{try{const g=await generateForLesson(created.id);msg('Öğrenme Çıktısı kaydedildi; '+g.created+' etkinlik otomatik oluşturuldu.')}catch(e){msg('Öğrenme Çıktısı kaydedildi ancak etkinlik üretimi başarısız: '+e.message)}e.target.reset();await teacherView()}};
+async function uploadLessonVideo(file){
+ if(!file)return null;
+ if(!['video/mp4','video/webm'].includes(file.type))throw Error('Yalnızca MP4 ve WebM yüklenebilir.');
+ if(file.size>40*1024*1024)throw Error('Video dosyası 40 MB sınırını aşıyor.');
+ const suffix=file.type==='video/mp4'?'mp4':'webm';
+ const path=me.id+'/'+crypto.randomUUID()+'.'+suffix;
+ const {error}=await db.storage.from('lesson-videos').upload(path,file,{contentType:file.type,upsert:false});
+ if(error)throw Error('Video yüklenemedi: '+error.message);
+ return db.storage.from('lesson-videos').getPublicUrl(path).data.publicUrl;
+}
 async function generateForLesson(id){const {data:{session}}=await db.auth.getSession();if(!session)throw Error('Oturum açın.');const res=await fetch('https://zhmkyfouskthqgrhvhqp.supabase.co/functions/v1/generate-lesson-activities',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable_YcqB4BO9knYzHk4KKLye3A_ilBb6I9u','Content-Type':'application/json'},body:JSON.stringify({lesson_id:id})});const json=await res.json();if(!res.ok)throw Error(json.error||'Oluşturulamadı');return json;}
 async function generateForWeek(date){const {data:rows,error}=await db.from('lessons').select('id,subject').eq('week_start',date).is('deleted_at',null);if(error)throw error;let total=0;for(const l of rows||[]){const out=await generateForLesson(l.id);total+=out.created||0;}return total;}
 async function teacherView(){
- const {data:lessons,error}=await db.from('lessons').select('id,title,subject,outcome,explanation,published,week_start,deleted_at').is('deleted_at',null).order('week_start',{ascending:false});if(error){msg(error.message);return}
+ const {data:lessons,error}=await db.from('lessons').select('id,title,subject,outcome,explanation,video_url,published,week_start,deleted_at').is('deleted_at',null).order('week_start',{ascending:false});if(error){msg(error.message);return}
  const {data:acts,error:actError}=await db.from('activities').select('lesson_id,deleted_at').is('deleted_at',null);
  const counts={};for(const a of acts||[])counts[a.lesson_id]=(counts[a.lesson_id]||0)+1;
  $('teacherLessons').innerHTML=lessons?.length?lessons.map(l=>{
@@ -77,17 +87,17 @@ async function teacherView(){
  const card=b.closest('.panel');if(card.querySelector('.outcome-editor')){card.querySelector('.outcome-editor').remove();return}
  const box=document.createElement('div');box.className='panel outcome-editor';
  box.style.cssText='background:#f5f5ff;border:2px solid #a9b6f6;margin-top:14px';
- box.innerHTML='<h3>✏️ Öğrenme Çıktısını Düzenle</h3><label>Kısa ad</label><input data-field="title" maxlength="180"><label>Öğrenme Çıktısı</label><textarea data-field="outcome" rows="4"></textarea><label>Kısa konu anlatımı</label><textarea data-field="explanation" rows="4"></textarea><p class="muted">Düzenleme mevcut etkinlikleri ve öğrenci kayıtlarını değiştirmez. İçerik ile etkinlikler uyumlu değilse yeni etkinlik hazırlayın.</p><button type="button" data-save-edit>💾 Değişiklikleri kaydet</button><button type="button" class="alt" data-cancel-edit>İptal</button>';
+ box.innerHTML='<h3>✏️ Öğrenme Çıktısını Düzenle</h3><label>Kısa ad</label><input data-field="title" maxlength="180"><label>Öğrenme Çıktısı</label><textarea data-field="outcome" rows="4"></textarea><label>Kısa konu anlatımı</label><textarea data-field="explanation" rows="4"></textarea><label>YouTube / MP4 video bağlantısı</label><input data-field="video_url" type="url" placeholder="https://..."><label>Video dosyası yükle (MP4/WebM, en fazla 40 MB)</label><input data-field="video_file" type="file" accept="video/mp4,video/webm"><p class="muted">Düzenleme mevcut etkinlikleri ve öğrenci kayıtlarını değiştirmez. İçerik ile etkinlikler uyumlu değilse yeni etkinlik hazırlayın.</p><button type="button" data-save-edit>💾 Değişiklikleri kaydet</button><button type="button" class="alt" data-cancel-edit>İptal</button>';
  card.append(box);
  box.querySelector('[data-field="title"]').value=l.title||'';
  box.querySelector('[data-field="outcome"]').value=l.outcome||'';
- box.querySelector('[data-field="explanation"]').value=l.explanation||'';
+ box.querySelector('[data-field="explanation"]').value=l.explanation||'';box.querySelector('[data-field="video_url"]').value=l.video_url||'';
  box.querySelector('[data-cancel-edit]').onclick=()=>box.remove();
  box.querySelector('[data-save-edit]').onclick=async()=>{
  const title=box.querySelector('[data-field="title"]').value.trim(),outcome=box.querySelector('[data-field="outcome"]').value.trim(),explanation=box.querySelector('[data-field="explanation"]').value.trim();
  if(!title||!outcome){window.alert('Kısa ad ve öğrenme çıktısı boş bırakılamaz.');return}
  const save=box.querySelector('[data-save-edit]');save.disabled=true;
- const {error}=await db.from('lessons').update({title,outcome,explanation}).eq('id',l.id).is('deleted_at',null);
+ let video_url=box.querySelector('[data-field="video_url"]').value.trim()||null;try{const file=box.querySelector('[data-field="video_file"]').files[0];if(file)video_url=await uploadLessonVideo(file)}catch(e){msg(e.message);save.disabled=false;return}const {error}=await db.from('lessons').update({title,outcome,explanation,video_url}).eq('id',l.id).is('deleted_at',null);
  if(error){msg('Düzenleme kaydedilemedi: '+error.message);save.disabled=false;return}
  msg('Öğrenme Çıktısı kaydedildi. Mevcut etkinlikler ve öğrenci sonuçları korundu.');await teacherView();
  };
