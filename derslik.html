@@ -14,7 +14,7 @@ button:hover{filter:brightness(1.06)}input:focus,textarea:focus,select:focus{out
 .notice{background:#fff4d8;border-left:5px solid #f6b84d}
 .teacher-hero{background:linear-gradient(115deg,#f6ecff,#e4f7ff 65%,#fff0d7)!important;border:2px solid #dad2fb!important}
 .lesson-stat{font-size:13px;color:#566588}.status-warn{color:#a45c15;font-weight:700}.status-ok{color:#197c55;font-weight:700}
-</style>
+button.danger{background:#b72e55;box-shadow:0 4px 0 #7a1737;color:white}button.danger-soft{background:#fff0f1;color:#a72748;box-shadow:0 3px 0 #eeb7c5;border:1px solid #dd91a6}</style>
 </head><body><header><h1>🚀 3/A Dijital Derslik</h1><div>Özel Süleymaniye Okulları Seyrice İlkokulu</div><div>Öğretmen: <strong>Murat Bolatlı</strong></div></header>
 <main class="wrap"><div class="panel"><h3>🪐 Etkileşimli Kesir Görevleri</h3><p>Matematik kazanımına bağlı 5 görsel ve düşünme etkinliği. Öğretmen olarak önizleyebilir, yayınladıktan sonra öğrenci hesaplarıyla tamamlatabilirsiniz.</p><a href="kesir-gorevleri-v2.html"><button>Etkinlikleri aç →</button></a></div>
 <div class="panel" id="auth">
@@ -67,10 +67,26 @@ async function teacherView(){
  return '<div class="panel"><b>📘 '+esc(l.subject)+' · '+esc(l.title)+'</b><p>'+esc(l.outcome)+'</p><p class="lesson-stat">📅 '+esc(l.week_start)+' · '+(l.published?'🟢 Yayında':'🟡 Taslak')+' · '+n+' etkinlik</p>'+
  (n===0?'<p class="status-warn">⚠️ Bu dersin interaktif etkinlikleri henüz hazırlanmamış. Yayınlama tek başına etkinlik oluşturmaz.</p>':'<p class="status-ok">✅ Etkinlik verileri hazır.</p>')+
  '<button data-publish="'+esc(l.id)+'" data-value="'+(!l.published)+'">'+(l.published?'Yayından kaldır':'Yayınla')+'</button>'+
- (n>0?'<a href="ders-gorevleri.html?lesson='+encodeURIComponent(l.id)+'"><button class="alt" type="button">🚀 '+n+' etkinliği aç</button></a>':'')+'</div>'
+ (n>0?'<a href="ders-gorevleri.html?lesson='+encodeURIComponent(l.id)+'"><button class="alt" type="button">🚀 '+n+' etkinliği aç</button></a>':'')+'<button type="button" class="danger-soft" data-delete-activities="'+esc(l.id)+'" '+(n===0?'disabled':'')+'>Etkinlikleri sil</button><button type="button" class="danger" data-delete-lesson="'+esc(l.id)+'">Kazanımı ve etkinlikleri sil</button></div>'
  }).join(''):'Henüz ders bulunmuyor.';
  if(actError)msg('Etkinlik sayıları alınamadı: '+actError.message);
  document.querySelectorAll('[data-publish]').forEach(b=>b.onclick=async()=>{const {error}=await db.from('lessons').update({published:b.dataset.value==='true'}).eq('id',b.dataset.publish);msg(error?error.message:'Ders durumu güncellendi.');if(!error)teacherView()});
+ document.querySelectorAll('[data-delete-activities]').forEach(b=>b.onclick=async()=>{
+ const l=lessons.find(x=>x.id===b.dataset.deleteActivities);if(!l)return;
+ if(!window.confirm('“'+l.title+'” kazanımına ait tüm etkinlikleri silmeyi onaylıyor musunuz?\\n\\nKazanım korunacak, etkinlikler ve bunlara bağlı öğrenci ilerlemeleri kalıcı olarak silinecek.'))return;
+ b.disabled=true;
+ const {error}=await db.from('activities').delete().eq('lesson_id',l.id);
+ msg(error?'Etkinlikler silinemedi: '+error.message:'Etkinlikler silindi; kazanım korundu.');
+ await teacherView();
+ });
+ document.querySelectorAll('[data-delete-lesson]').forEach(b=>b.onclick=async()=>{
+ const l=lessons.find(x=>x.id===b.dataset.deleteLesson);if(!l)return;
+ if(!window.confirm('“'+l.title+'” kazanımını ve bağlı tüm etkinlikleri silmeyi onaylıyor musunuz?\\n\\nÖğrenci ilerlemeleri de dahil olmak üzere bu işlem geri alınamaz.'))return;
+ b.disabled=true;
+ const {error}=await db.from('lessons').delete().eq('id',l.id);
+ msg(error?'Kazanım silinemedi: '+error.message:'Kazanım ve bağlı etkinlikleri silme işlemi tamamlandı.');
+ await teacherView();
+ });
  const {data:students,error:studentError}=await db.from('profiles').select('id,display_name,student_code').eq('role','student').order('display_name');
 const {data:records,error:progressError}=await db.from('progress').select('student_id,activity_id,status,score,updated_at');
 const byStudent={};for(const x of records||[]){if(!byStudent[x.student_id])byStudent[x.student_id]={completed:0,attempts:0};byStudent[x.student_id].attempts++;if(x.status==='completed')byStudent[x.student_id].completed++}
