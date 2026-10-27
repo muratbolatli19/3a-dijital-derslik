@@ -217,10 +217,15 @@ removeVideo.onclick=()=>{if(!window.confirm('Bu öğrenme çıktısının video 
  document.querySelectorAll('[data-purge-activities]').forEach(b=>b.onclick=()=>{const l=(lessons||[]).find(x=>x.id===b.dataset.purgeActivities);if(l)purgeTrash('activities',l.id,l.title+' etkinlikleri')});
  const {data:students,error:studentError}=await db.from('profiles').select('id,display_name,student_code').eq('role','student').order('display_name');
 const {data:records,error:progressError}=await db.from('progress').select('student_id,activity_id,status,score,updated_at');
+const {data:testScores}=await db.from('test_scores').select('student_id,score');
+const {data:lessonAwards}=await db.from('learning_awards').select('student_id,kind,points');
+const awarded={};for(const a of lessonAwards||[]){if(!awarded[a.student_id])awarded[a.student_id]={narration:0,video:0};awarded[a.student_id][a.kind]=(awarded[a.student_id][a.kind]||0)+a.points}
+const quizPoints={};for(const t of testScores||[])quizPoints[t.student_id]=(quizPoints[t.student_id]||0)+t.score;
+
 const byStudent={};for(const x of records||[]){if(!byStudent[x.student_id])byStudent[x.student_id]={completed:0,attempts:0};byStudent[x.student_id].attempts++;if(x.status==='completed')byStudent[x.student_id].completed++}
 const totalStudents=students?.length||0;const completeStudents=(students||[]).filter(x=>(byStudent[x.id]?.completed||0)>0).length;
 $('progressSummary').innerHTML='<div class="panel"><h3>👩‍🎓 '+totalStudents+'</h3><p>Öğrenci hesabı</p></div><div class="panel"><h3>✅ '+completeStudents+'</h3><p>Etkinliğe başlayan/tamamlayan öğrenci</p></div><div class="panel"><h3>📝 '+(records?.length||0)+'</h3><p>İlerleme kaydı</p></div>';
-$('studentList').innerHTML=students?.length?students.map(x=>'<div class="panel"><b>'+esc(x.display_name)+'</b> · '+esc(x.student_code||'')+'<p>Tamamlanan görev: '+(byStudent[x.id]?.completed||0)+'</p></div>').join(''):'Henüz öğrenci hesabı yok. Öğrenci kayıtları güvenli yönetim işlemiyle oluşturulmalıdır.';
+$('studentList').innerHTML=students?.length?students.map(x=>'<div class="panel"><b>'+esc(x.display_name)+'</b> · '+esc(x.student_code||'')+'<p>📖 Anlatım: '+(awarded[x.id]?.narration||0)+' puan · 🎥 Video: '+(awarded[x.id]?.video||0)+' puan · 🎮 Ders oyunu: '+((byStudent[x.id]?.completed||0)*10)+' puan · 📝 Test/yarışma: '+(quizPoints[x.id]||0)+' puan</p><p><b>Toplam: '+((awarded[x.id]?.narration||0)+(awarded[x.id]?.video||0)+(byStudent[x.id]?.completed||0)*10+(quizPoints[x.id]||0))+' puan</b></p></div>').join(''):'Henüz öğrenci hesabı yok. Öğrenci kayıtları güvenli yönetim işlemiyle oluşturulmalıdır.';
 if(studentError||progressError)msg('İlerleme verileri alınırken sorun oluştu: '+(studentError?.message||progressError?.message));
 }
 async function studentView(){
