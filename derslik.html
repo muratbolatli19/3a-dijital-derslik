@@ -16,7 +16,7 @@ button:hover{filter:brightness(1.06)}input:focus,textarea:focus,select:focus{out
 .lesson-stat{font-size:13px;color:#566588}.status-warn{color:#a45c15;font-weight:700}.status-ok{color:#197c55;font-weight:700}
 button.danger{background:#b72e55;box-shadow:0 4px 0 #7a1737;color:white}button.danger-soft{background:#fff0f1;color:#a72748;box-shadow:0 3px 0 #eeb7c5;border:1px solid #dd91a6}</style>
 </head><body><header><h1>🚀 3/A Dijital Derslik</h1><div>Özel Süleymaniye Okulları Seyrice İlkokulu</div><div>Öğretmen: <strong>Murat Bolatlı</strong></div></header>
-<main class="wrap"><div class="panel"><h3>🪐 Etkileşimli Kesir Görevleri</h3><p>Matematik öğrenme çıktısıına bağlı 5 görsel ve düşünme etkinliği. Öğretmen olarak önizleyebilir, yayınladıktan sonra öğrenci hesaplarıyla tamamlatabilirsiniz.</p><a href="kesir-gorevleri-v2.html"><button>Etkinlikleri aç →</button></a></div>
+<main class="wrap"><div class="panel"><h3>🪐 Etkileşimli Kesir Görevleri</h3><p>Matematik öğrenme çıktısınına bağlı 5 görsel ve düşünme etkinliği. Öğretmen olarak önizleyebilir, yayınladıktan sonra öğrenci hesaplarıyla tamamlatabilirsiniz.</p><a href="kesir-gorevleri-v2.html"><button>Etkinlikleri aç →</button></a></div>
 <div class="panel" id="auth">
 <h2>Güvenli giriş</h2><p class="muted">Öğretmen ve öğrenciler için merkezi hesap sistemi. Henüz gerçek öğrenci hesapları tanımlanmadı.</p>
 <div class="grid"><div><label>E-posta veya öğrenci kodu</label><input id="email" type="email" autocomplete="email" placeholder="Öğretmen e-postası veya öğrenci kodu"></div><div><label>Şifre</label><input id="password" type="password" autocomplete="current-password" placeholder="Şifre (en az 12 karakter)"></div></div>
@@ -25,7 +25,7 @@ button.danger{background:#b72e55;box-shadow:0 4px 0 #7a1737;color:white}button.d
 </div>
 <div class="panel hidden" id="main">
 <div class="row"><div><h2 id="greeting">Hoş geldiniz</h2><p class="muted" id="role"></p></div><button id="logout" class="alt">Çıkış</button></div>
-<div id="teacher" class="hidden"><div class="panel teacher-hero"><h2>✨ Murat Bolatlı · Öğretmen Kontrol Merkezi</h2><p>📚 Haftalık planlarınızı yönetin, 🚀 etkinliklere ulaşın, 📊 öğrencilerin ilerlemesini takip edin.</p></div><div class="panel"><h3>📚 Haftalık öğrenme çıktılarını toplu ekle</h3><p>Plan tablosunu yapıştırın; dört dersin öğrenme çıktısıını ve üstteki tarihi otomatik ayırıp önizleyin.</p><textarea id="weeklyText" style="min-height:170px" placeholder="3. SINIFLAR ZÜMRESİ HAFTALIK DERS PLANI (7.HAFTA)(26-30 EKİM)&#10;TÜRKÇE ... | MATEMATİK ..."></textarea><button id="weeklyParse" type="button">Planı önizle</button><div id="weeklyFields"></div><button id="weeklySave" class="hidden" type="button">Dört dersi taslak kaydet</button></div>
+<div id="teacher" class="hidden"><div class="panel teacher-hero"><h2>✨ Murat Bolatlı · Öğretmen Kontrol Merkezi</h2><p>📚 Haftalık planlarınızı yönetin, 🚀 etkinliklere ulaşın, 📊 öğrencilerin ilerlemesini takip edin.</p></div><div class="panel"><h3>📚 Haftalık öğrenme çıktılarını toplu ekle</h3><p>Plan tablosunu yapıştırın; dört dersin öğrenme çıktısınını ve üstteki tarihi otomatik ayırıp önizleyin.</p><textarea id="weeklyText" style="min-height:170px" placeholder="3. SINIFLAR ZÜMRESİ HAFTALIK DERS PLANI (7.HAFTA)(26-30 EKİM)&#10;TÜRKÇE ... | MATEMATİK ..."></textarea><button id="weeklyParse" type="button">Planı önizle</button><div id="weeklyFields"></div><button id="weeklySave" class="hidden" type="button">Dört dersi taslak kaydet</button></div>
 <div class="panel"><h3>Yeni Öğrenme Çıktısı</h3><form id="form">
 <div class="grid"><div><label>Ders</label><select id="subject"><option>Matematik</option><option>Türkçe</option><option>Fen Bilimleri</option><option>Hayat Bilgisi</option></select></div><div><label>Hafta başlangıcı</label><input type="date" id="week" required></div></div>
 <label>Öğrenme Çıktısı Kısa Adı (yalnızca panelde tanımlama için)</label><input id="title" required maxlength="180" placeholder="Bütün, yarım ve çeyrek">
@@ -33,7 +33,7 @@ button.danger{background:#b72e55;box-shadow:0 4px 0 #7a1737;color:white}button.d
 <label>Kısa anlatım</label><textarea id="explanation" placeholder="Öğrencinin okuyacağı açıklama"></textarea>
 <label>Video bağlantısı (isteğe bağlı, doğrudan MP4 veya YouTube)</label><input id="video" type="url" placeholder="https://...">
 <button type="submit">Taslak dersi kaydet</button></form><p class="muted">Dersler başlangıçta taslak kalır. Yayınlamak için aşağıdaki listeden Yayınla seçin.</p></div>
-<div class="panel"><h3>Ders yönetimi</h3><div id="teacherLessons"></div><div class="panel" style="background:#fff9ef;border:2px solid #f3dbac"><h3>🗑️ Çöp Kutusu · Geri Yükle</h3><p class="muted">Silinen öğrenme çıktısılar ve etkinlikler kalıcı olarak yok edilmez. Öğrenci ilerlemeleri saklanır.</p><div id="trashLessons"></div><div id="trashActivities"></div></div></div>
+<div class="panel"><h3>Ders yönetimi</h3><div id="teacherLessons"></div><div class="panel" style="background:#fff9ef;border:2px solid #f3dbac"><h3>🗑️ Çöp Kutusu · Geri Yükle</h3><p class="muted">Silinen öğrenme çıktıları ve etkinlikler kalıcı olarak yok edilmez. Öğrenci ilerlemeleri saklanır.</p><div id="trashLessons"></div><div id="trashActivities"></div></div></div>
 <div class="panel"><h3>📊 Öğrenci hesapları ve ilerleme</h3><div class="panel"><h4>👤 Yeni öğrenci hesabı oluştur</h4><p class="muted">Sadece öğretmen yetkisiyle çalışır. Öğrenci kodu 4–8 rakam, ilk şifre en az 12 karakter olmalıdır.</p><div class="grid"><div><label>Öğrenci adı soyadı</label><input id="newStudentName" autocomplete="off" placeholder="Öğrenci adı soyadı"></div><div><label>Öğrenci kodu</label><input id="newStudentCode" autocomplete="off" inputmode="numeric" placeholder="1001"></div><div><label>İlk şifre</label><input id="newStudentPassword" type="password" autocomplete="new-password" placeholder="En az 12 karakter"></div></div><button id="createStudent" type="button">Öğrenci hesabını güvenli oluştur</button><p id="studentActionMessage" aria-live="polite"></p></div><div id="progressSummary" class="grid"></div><div id="progressDetails"></div><p>Gerçek öğrenci profilleri yalnızca yetkili yönetim işleminden sonra oluşturulacaktır. Öğrenci şifrelerini GitHub koduna yazmayın.</p><div id="studentList"></div></div></div>
 <div id="student" class="hidden"><h3>Haftalık derslerim</h3><div id="studentLessons"></div></div>
 </div><p id="status" role="status" aria-live="polite"></p>
@@ -76,7 +76,7 @@ async function teacherView(){
  document.querySelectorAll('[data-publish]').forEach(b=>b.onclick=async()=>{const {error}=await db.from('lessons').update({published:b.dataset.value==='true'}).eq('id',b.dataset.publish);msg(error?error.message:'Ders durumu güncellendi.');if(!error)teacherView()});
  document.querySelectorAll('[data-delete-activities]').forEach(b=>b.onclick=async()=>{
  const l=lessons.find(x=>x.id===b.dataset.deleteActivities);if(!l)return;
- if(!window.confirm('“'+l.title+'” öğrenme çıktısıına ait tüm etkinlikleri silmeyi onaylıyor musunuz?\\n\\nÖğrenme Çıktısı korunacak, etkinlikler Çöp Kutusu’na taşınacak; öğrenci sonuçları korunacak.'))return;
+ if(!window.confirm('“'+l.title+'” öğrenme çıktısınına ait tüm etkinlikleri silmeyi onaylıyor musunuz?\\n\\nÖğrenme Çıktısı korunacak, etkinlikler Çöp Kutusu’na taşınacak; öğrenci sonuçları korunacak.'))return;
  b.disabled=true;
  const {error}=await db.from('activities').update({deleted_at:new Date().toISOString()}).eq('lesson_id',l.id).is('deleted_at',null);
  msg(error?'Etkinlikler silinemedi: '+error.message:'Etkinlikler Çöp Kutusu’na taşındı; öğrenme çıktısı korundu.');
@@ -84,7 +84,7 @@ async function teacherView(){
  });
  document.querySelectorAll('[data-delete-lesson]').forEach(b=>b.onclick=async()=>{
  const l=lessons.find(x=>x.id===b.dataset.deleteLesson);if(!l)return;
- if(!window.confirm('“'+l.title+'” öğrenme çıktısıını ve bağlı tüm etkinlikleri silmeyi onaylıyor musunuz?\\n\\nÖğrenme Çıktısı Çöp Kutusu’na taşınacak ve daha sonra geri yüklenebilecek.'))return;
+ if(!window.confirm('“'+l.title+'” öğrenme çıktısınını ve bağlı tüm etkinlikleri silmeyi onaylıyor musunuz?\\n\\nÖğrenme Çıktısı Çöp Kutusu’na taşınacak ve daha sonra geri yüklenebilecek.'))return;
  b.disabled=true;
  const {error}=await db.from('lessons').update({deleted_at:new Date().toISOString(),published:false}).eq('id',l.id).is('deleted_at',null);
  msg(error?'Öğrenme Çıktısı silinemedi: '+error.message:'Öğrenme Çıktısı Çöp Kutusu’na taşındı.');
@@ -94,12 +94,24 @@ async function teacherView(){
  const {data:removedLessons, error:trashError}=await db.from('lessons').select('id,title,subject,deleted_at').not('deleted_at','is',null).order('deleted_at',{ascending:false});
  const {data:removedActivities}=await db.from('activities').select('id,lesson_id,deleted_at').not('deleted_at','is',null);
  const removedCounts={};for(const a of removedActivities||[])removedCounts[a.lesson_id]=(removedCounts[a.lesson_id]||0)+1;
- $('trashLessons').innerHTML=removedLessons?.length?'<h4>Silinen öğrenme çıktısılar</h4>'+removedLessons.map(l=>'<div class="panel">📘 '+esc(l.subject)+' · '+esc(l.title)+'<button type="button" data-restore-lesson="'+esc(l.id)+'">↩️ Öğrenme Çıktısıı geri yükle</button></div>').join(''):'<p>Silinmiş öğrenme çıktısı bulunmuyor.</p>';
+ $('trashLessons').innerHTML=removedLessons?.length?'<h4>Silinen öğrenme çıktısılar</h4>'+removedLessons.map(l=>'<div class="panel">📘 '+esc(l.subject)+' · '+esc(l.title)+'<button type="button" data-restore-lesson="'+esc(l.id)+'">↩️ Öğrenme Çıktısını geri yükle</button><button class="danger" type="button" data-purge-lesson="'+esc(l.id)+'">🗑️ Kalıcı olarak sil</button></div>').join(''):'<p>Silinmiş öğrenme çıktısı bulunmuyor.</p>';
  const archivedActivityGroups=(lessons||[]).filter(l=>removedCounts[l.id]>0);
- $('trashActivities').innerHTML=archivedActivityGroups.length?'<h4>Silinen etkinlikler</h4>'+archivedActivityGroups.map(l=>'<div class="panel">🎮 '+esc(l.subject)+' · '+esc(l.title)+' ('+removedCounts[l.id]+' etkinlik)<button type="button" data-restore-activities="'+esc(l.id)+'">↩️ Etkinlikleri geri yükle</button></div>').join(''):'';
+ $('trashActivities').innerHTML=archivedActivityGroups.length?'<h4>Silinen etkinlikler</h4>'+archivedActivityGroups.map(l=>'<div class="panel">🎮 '+esc(l.subject)+' · '+esc(l.title)+' ('+removedCounts[l.id]+' etkinlik)<button type="button" data-restore-activities="'+esc(l.id)+'">↩️ Etkinlikleri geri yükle</button><button class="danger" type="button" data-purge-activities="'+esc(l.id)+'">🗑️ Kalıcı olarak sil</button></div>').join(''):'';
  if(trashError)msg('Çöp kutusu alınamadı: '+trashError.message);
- document.querySelectorAll('[data-restore-lesson]').forEach(b=>b.onclick=async()=>{if(!window.confirm('Bu öğrenme çıktısıı geri yüklemek istiyor musunuz?'))return;b.disabled=true;const {error}=await db.from('lessons').update({deleted_at:null,published:false}).eq('id',b.dataset.restoreLesson);msg(error?error.message:'Öğrenme Çıktısı taslak olarak geri yüklendi.');await teacherView()});
+ document.querySelectorAll('[data-restore-lesson]').forEach(b=>b.onclick=async()=>{if(!window.confirm('Bu öğrenme çıktısını geri yüklemek istiyor musunuz?'))return;b.disabled=true;const {error}=await db.from('lessons').update({deleted_at:null,published:false}).eq('id',b.dataset.restoreLesson);msg(error?error.message:'Öğrenme Çıktısı taslak olarak geri yüklendi.');await teacherView()});
  document.querySelectorAll('[data-restore-activities]').forEach(b=>b.onclick=async()=>{if(!window.confirm('Bu dersin arşivdeki etkinliklerini geri yüklemek istiyor musunuz?'))return;b.disabled=true;const {error}=await db.from('activities').update({deleted_at:null}).eq('lesson_id',b.dataset.restoreActivities).not('deleted_at','is',null);msg(error?error.message:'Etkinlikler geri yüklendi.');await teacherView()});
+ async function purgeTrash(type,id,label){
+ if(!window.confirm('“'+label+'” kalıcı olarak silinsin mi? Bu işlem geri alınamaz; bağlı öğrenci ilerlemeleri de silinebilir.'))return;
+ if(!window.confirm('SON ONAY: Kalıcı silmeyi kesin olarak onaylıyor musunuz?'))return;
+ try{
+ const {data:{session}}=await db.auth.getSession();if(!session)throw Error('Öğretmen oturumu gerekli.');
+ const response=await fetch('https://zhmkyfouskthqgrhvhqp.supabase.co/functions/v1/permanent-delete-trash',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable_YcqB4BO9knYzHk4KKLye3A_ilBb6I9u','Content-Type':'application/json'},body:JSON.stringify({type,id})});
+ const result=await response.json();if(!response.ok||!result.ok)throw Error(result.error||'Silinemedi');
+ msg('Çöp Kutusu kaydı kalıcı olarak silindi.');await teacherView();
+ }catch(e){msg('Kalıcı silme hatası: '+e.message);window.alert('Kalıcı silme hatası: '+e.message)}
+ }
+ document.querySelectorAll('[data-purge-lesson]').forEach(b=>b.onclick=()=>{const l=(removedLessons||[]).find(x=>x.id===b.dataset.purgeLesson);if(l)purgeTrash('lesson',l.id,l.title)});
+ document.querySelectorAll('[data-purge-activities]').forEach(b=>b.onclick=()=>{const l=(lessons||[]).find(x=>x.id===b.dataset.purgeActivities);if(l)purgeTrash('activities',l.id,l.title+' etkinlikleri')});
  const {data:students,error:studentError}=await db.from('profiles').select('id,display_name,student_code').eq('role','student').order('display_name');
 const {data:records,error:progressError}=await db.from('progress').select('student_id,activity_id,status,score,updated_at');
 const byStudent={};for(const x of records||[]){if(!byStudent[x.student_id])byStudent[x.student_id]={completed:0,attempts:0};byStudent[x.student_id].attempts++;if(x.status==='completed')byStudent[x.student_id].completed++}
@@ -152,7 +164,7 @@ $('weeklyParse').onclick=()=>{
 $('weeklySave').onclick=async()=>{
  if(profile?.role!=='teacher')return;
  document.querySelectorAll('[data-lesson]').forEach(el=>parsedWeek[Number(el.dataset.lesson)].outcome=el.value.trim());
- if(parsedWeek.some(x=>!x.outcome))return msg('Dört dersin öğrenme çıktısıı da doldurulmalı.');
+ if(parsedWeek.some(x=>!x.outcome))return msg('Dört dersin öğrenme çıktısını da doldurulmalı.');
  const {data:existing,error:readError}=await db.from('lessons').select('subject').eq('week_start',parsedWeek[0].week_start);
  if(readError)return msg(readError.message);
  const done=new Set((existing||[]).map(x=>x.subject));
