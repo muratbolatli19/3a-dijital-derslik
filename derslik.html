@@ -96,7 +96,7 @@ $('saveOnlineTest').onclick=async()=>{
  const title=$('testTitle').value.trim();
  const lines=$('testQuestions').value.trim().split(/\r?\n/).filter(Boolean);
  const questions=lines.map(line=>{const p=line.split('|').map(s=>s.trim());return {prompt:p[0],options:p.slice(1,4),correct_index:Number(p[4])-1}});
- if(!title||!questions.length||questions.some(q=>!q.prompt||q.options.length!==3||q.options.some(o=>!o)||!Number.isInteger(q.correct_index)||q.correct_index<0||q.correct_index>2)){$('testMessage').textContent='Soruları örnekteki beş alanlı biçimde girin.';return}
+ if(!title||(!questions.length&&!$('testPdf').value.trim()&&!$('testPdfFile').files.length)||questions.some(q=>!q.prompt||q.options.length!==3||q.options.some(o=>!o)||!Number.isInteger(q.correct_index)||q.correct_index<0||q.correct_index>2)){$('testMessage').textContent='Test adı ve PDF veya örnekteki beş alanlı sorular gerekli.';return}
  let pdf_url=$('testPdf').value.trim()||null;
  if(pdf_url&&!pdf_url.startsWith('https://')){$('testMessage').textContent='PDF bağlantısı HTTPS olmalı.';return}
  const b=$('saveOnlineTest');b.disabled=true;
