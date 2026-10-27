@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>3/A Dijital Derslik · Giriş</title>
+<style>:root{font-family:system-ui,Arial;color:#193456;background:#f1f5fb}*{box-sizing:border-box}body{margin:0}header{background:#102c56;color:white;padding:25px max(16px,calc((100vw - 970px)/2))}header h1{margin:0 0 5px}.wrap{max-width:970px;margin:22px auto;padding:0 16px}.panel{background:white;border-radius:16px;padding:20px;margin:12px 0;box-shadow:0 4px 24px #203f6415}label{display:block;font-size:14px;margin:8px 0 3px}input,textarea,select{width:100%;padding:10px;border:1px solid #b5c4d7;border-radius:8px;font:inherit}textarea{min-height:88px}button{border:0;background:#2464b4;border-radius:10px;padding:11px 15px;color:white;cursor:pointer;font:inherit;margin:6px 4px 6px 0}button:disabled{opacity:.45;cursor:not-allowed}button.alt{background:#e7eefb;color:#19437f}.hidden{display:none!important}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:13px}.muted{color:#52647e}.notice{background:#fff4d7;padding:12px;border-radius:10px}.row{display:flex;justify-content:space-between;gap:10px;align-items:center}.chip{border-radius:30px;background:#ecf4fe;padding:5px 10px;font-size:13px}footer{text-align:center;color:#63728a;padding:20px}a{color:#2464b4}li{margin:8px 0}pre{white-space:pre-wrap}.correct{color:#167144;font-weight:700}@media(max-width:600px){.row{align-items:flex-start;flex-direction:column}}</style>
+</head><body><header><h1>🚀 3/A Dijital Derslik</h1><div>Özel Süleymaniye Okulları Seyrice İlkokulu</div><div>Öğretmen: <strong>Murat Bolatlı</strong></div></header>
+<main class="wrap">
+<div class="panel" id="auth">
+<h2>Güvenli giriş</h2><p class="muted">Öğretmen ve öğrenciler için merkezi hesap sistemi. Henüz gerçek öğrenci hesapları tanımlanmadı.</p>
+<div class="grid"><div><label>E-posta</label><input id="email" type="email" autocomplete="email" placeholder="E-posta adresi"></div><div><label>Şifre</label><input id="password" type="password" autocomplete="current-password" placeholder="Şifre (en az 12 karakter)"></div></div>
+<button id="signin">Giriş yap</button><button id="signup" class="alt">İlk öğretmen hesabımı oluştur</button><button id="reset" class="alt">Şifremi sıfırla</button>
+<p class="notice">Öğretmen hesabı e-posta doğrulaması ve yönetici onayından sonra açılır. Hesap oluşturmanız sizi otomatik olarak öğretmen yetkilisi yapmaz.</p>
+</div>
+<div class="panel hidden" id="main">
+<div class="row"><div><h2 id="greeting">Hoş geldiniz</h2><p class="muted" id="role"></p></div><button id="logout" class="alt">Çıkış</button></div>
+<div id="teacher" class="hidden">
+<div class="panel"><h3>Yeni kazanım / ders</h3><form id="form">
+<div class="grid"><div><label>Ders</label><select id="subject"><option>Matematik</option><option>Türkçe</option><option>Fen Bilimleri</option><option>Hayat Bilgisi</option></select></div><div><label>Hafta başlangıcı</label><input type="date" id="week" required></div></div>
+<label>Dersin başlığı</label><input id="title" required maxlength="180" placeholder="Bütün, yarım ve çeyrek">
+<label>Kazanım</label><textarea id="outcome" required placeholder="MAT.3.1.9 ..."></textarea>
+<label>Kısa anlatım</label><textarea id="explanation" placeholder="Öğrencinin okuyacağı açıklama"></textarea>
+<label>Video bağlantısı (isteğe bağlı, doğrudan MP4 veya YouTube)</label><input id="video" type="url" placeholder="https://...">
+<button type="submit">Taslak dersi kaydet</button></form><p class="muted">Dersler başlangıçta taslak kalır. Yayınlamak için aşağıdaki listeden Yayınla seçin.</p></div>
+<div class="panel"><h3>Ders yönetimi</h3><div id="teacherLessons"></div></div>
+<div class="panel"><h3>Öğrenci hesapları ve ilerleme</h3><p>Gerçek öğrenci profilleri yalnızca yetkili yönetim işleminden sonra oluşturulacaktır. Öğrenci şifrelerini GitHub koduna yazmayın.</p><div id="studentList"></div></div></div>
+<div id="student" class="hidden"><h3>Haftalık derslerim</h3><div id="studentLessons"></div></div>
+</div><p id="status" role="status" aria-live="polite"></p>
+</main><footer>Hazırlayan: Murat Bolatlı · 3/A Dijital Derslik · Ücretsiz sürüm</footer>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/+esm';
+const db=createClient('https://zhmkyfouskthqgrhvhqp.supabase.co','sb_publishable_YcqB4BO9knYzHk4KKLye3A_ilBb6I9u');
+const $=id=>document.getElementById(id), msg=s=>{$('status').textContent=s};
+let me=null,profile=null;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function videoHTML(url){if(!url)return '';try{const u=new URL(url);if(u.protocol!=='https:')return '';let id=null;if(u.hostname==='youtu.be')id=u.pathname.slice(1);if(['youtube.com','www.youtube.com'].includes(u.hostname))id=u.searchParams.get('v');if(id&&/^[a-zA-Z0-9_-]{11}$/.test(id))return '<iframe title="Konu anlatım videosu" width="100%" height="240" loading="lazy" sandbox="allow-scripts allow-same-origin allow-presentation" allowfullscreen src="https://www.youtube-nocookie.com/embed/'+id+'"></iframe>';if(u.pathname.toLowerCase().endsWith('.mp4'))return '<video controls width="100%" src="'+esc(url)+'"></video>'}catch(e){}return '<p>Video bağlantısı desteklenmedi. HTTPS MP4 veya YouTube bağlantısı ekleyin.</p>'}
+async function refresh(){const {data:{user}}=await db.auth.getUser();me=user;if(!me){$('auth').classList.remove('hidden');$('main').classList.add('hidden');return}
+$('auth').classList.add('hidden');$('main').classList.remove('hidden');
+const {data:p,error}=await db.from('profiles').select('role,display_name,active').eq('id',me.id).maybeSingle();
+profile=p;if(error||!p||!p.active){$('greeting').textContent='Hesap doğrulama bekliyor';$('role').textContent='E-posta hesabınız oluşturuldu. Öğretmen yetkisi güvenli yönetim ekranından atanmalıdır.';$('teacher').classList.add('hidden');$('student').classList.add('hidden');return}
+$('greeting').textContent='Hoş geldiniz, '+p.display_name;$('role').textContent=p.role==='teacher'?'Öğretmen paneli':'Öğrenci dersliği';
+$('teacher').classList.toggle('hidden',p.role!=='teacher');$('student').classList.toggle('hidden',p.role!=='student');
+if(p.role==='teacher')await teacherView();else await studentView()
+}
+$('signin').onclick=async()=>{const {error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)msg(error.message);else {msg('');await refresh()}};
+$('signup').onclick=async()=>{if($('password').value.length<12){msg('Şifre en az 12 karakter olmalıdır.');return}const {error}=await db.auth.signUp({email:$('email').value.trim(),password:$('password').value});msg(error?error.message:'Hesap isteği alındı. E-posta doğrulamasını yapın; öğretmen yetkisi ayrıca tanımlanmalıdır.')};
+$('reset').onclick=async()=>{const {error}=await db.auth.resetPasswordForEmail($('email').value.trim(),{redirectTo:location.origin+location.pathname});msg(error?error.message:'Sıfırlama e-postası gönderilmesi istendi.')};
+$('logout').onclick=async()=>{await db.auth.signOut();await refresh()};
+$('form').onsubmit=async e=>{e.preventDefault();const obj={author_id:me.id,subject:$('subject').value,week_start:$('week').value,title:$('title').value.trim(),outcome:$('outcome').value.trim(),explanation:$('explanation').value.trim(),video_url:$('video').value.trim()||null,published:false};const {error}=await db.from('lessons').insert(obj);msg(error?error.message:'Ders taslak olarak kaydedildi.');if(!error){e.target.reset();await teacherView()}};
+async function teacherView(){const {data:lessons,error}=await db.from('lessons').select('id,title,subject,outcome,published,week_start').order('week_start',{ascending:false});if(error){msg(error.message);return}
+$('teacherLessons').innerHTML=lessons?.length?lessons.map(l=>'<div class="panel"><b>'+esc(l.subject)+' · '+esc(l.title)+'</b><p>'+esc(l.outcome)+'</p><span class="chip">'+esc(l.week_start)+' · '+(l.published?'Yayında':'Taslak')+'</span> <button data-publish="'+esc(l.id)+'" data-value="'+(!l.published)+'">'+(l.published?'Yayından kaldır':'Yayınla')+'</button></div>').join(''):'Henüz ders bulunmuyor.';
+document.querySelectorAll('[data-publish]').forEach(b=>b.onclick=async()=>{const {error}=await db.from('lessons').update({published:b.dataset.value==='true'}).eq('id',b.dataset.publish);msg(error?error.message:'Ders durumu güncellendi.');if(!error)teacherView()});
+const {data:students}=await db.from('profiles').select('display_name,student_code').eq('role','student').order('display_name');$('studentList').textContent=students?.length?students.map(s=>s.display_name+' ('+(s.student_code||'kod yok')+')').join(' · '):'Henüz tanımlı öğrenci yok.'}
+async function studentView(){const {data,error}=await db.from('lessons').select('id,title,subject,explanation,week_start,video_url').eq('published',true).order('week_start',{ascending:false});if(error){msg(error.message);return}
+$('studentLessons').innerHTML=data?.length?data.map(l=>'<div class="panel"><h3>'+esc(l.subject)+' · '+esc(l.title)+'</h3><p>'+esc(l.explanation)+'</p>'+videoHTML(l.video_url)+'<p class="muted">'+esc(l.week_start)+'</p></div>').join(''):'Henüz yayınlanmış bir ders yok.'}
+await refresh();
+</script></body></html>
