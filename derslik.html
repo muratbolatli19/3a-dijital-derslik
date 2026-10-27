@@ -34,7 +34,7 @@ button:hover{filter:brightness(1.06)}input:focus,textarea:focus,select:focus{out
 <label>Video bağlantısı (isteğe bağlı, doğrudan MP4 veya YouTube)</label><input id="video" type="url" placeholder="https://...">
 <button type="submit">Taslak dersi kaydet</button></form><p class="muted">Dersler başlangıçta taslak kalır. Yayınlamak için aşağıdaki listeden Yayınla seçin.</p></div>
 <div class="panel"><h3>Ders yönetimi</h3><div id="teacherLessons"></div></div>
-<div class="panel"><h3>Öğrenci hesapları ve ilerleme</h3><p>Gerçek öğrenci profilleri yalnızca yetkili yönetim işleminden sonra oluşturulacaktır. Öğrenci şifrelerini GitHub koduna yazmayın.</p><div id="studentList"></div></div></div>
+<div class="panel"><h3>📊 Öğrenci hesapları ve ilerleme</h3><div id="progressSummary" class="grid"></div><div id="progressDetails"></div><p>Gerçek öğrenci profilleri yalnızca yetkili yönetim işleminden sonra oluşturulacaktır. Öğrenci şifrelerini GitHub koduna yazmayın.</p><div id="studentList"></div></div></div>
 <div id="student" class="hidden"><h3>Haftalık derslerim</h3><div id="studentLessons"></div></div>
 </div><p id="status" role="status" aria-live="polite"></p>
 </main><footer>Hazırlayan: Murat Bolatlı · 3/A Dijital Derslik · Ücretsiz sürüm</footer>
@@ -71,7 +71,13 @@ async function teacherView(){
  }).join(''):'Henüz ders bulunmuyor.';
  if(actError)msg('Etkinlik sayıları alınamadı: '+actError.message);
  document.querySelectorAll('[data-publish]').forEach(b=>b.onclick=async()=>{const {error}=await db.from('lessons').update({published:b.dataset.value==='true'}).eq('id',b.dataset.publish);msg(error?error.message:'Ders durumu güncellendi.');if(!error)teacherView()});
- const {data:students}=await db.from('profiles').select('display_name,student_code').eq('role','student').order('display_name');$('studentList').textContent=students?.length?students.map(s=>s.display_name+' ('+(s.student_code||'kod yok')+')').join(' · '):'Henüz tanımlı öğrenci yok.';
+ const {data:students,error:studentError}=await db.from('profiles').select('id,display_name,student_code').eq('role','student').order('display_name');
+const {data:records,error:progressError}=await db.from('progress').select('student_id,activity_id,status,score,updated_at');
+const byStudent={};for(const x of records||[]){if(!byStudent[x.student_id])byStudent[x.student_id]={completed:0,attempts:0};byStudent[x.student_id].attempts++;if(x.status==='completed')byStudent[x.student_id].completed++}
+const totalStudents=students?.length||0;const completeStudents=(students||[]).filter(x=>(byStudent[x.id]?.completed||0)>0).length;
+$('progressSummary').innerHTML='<div class="panel"><h3>👩‍🎓 '+totalStudents+'</h3><p>Öğrenci hesabı</p></div><div class="panel"><h3>✅ '+completeStudents+'</h3><p>Etkinliğe başlayan/tamamlayan öğrenci</p></div><div class="panel"><h3>📝 '+(records?.length||0)+'</h3><p>İlerleme kaydı</p></div>';
+$('studentList').innerHTML=students?.length?students.map(x=>'<div class="panel"><b>'+esc(x.display_name)+'</b> · '+esc(x.student_code||'')+'<p>Tamamlanan görev: '+(byStudent[x.id]?.completed||0)+'</p></div>').join(''):'Henüz öğrenci hesabı yok. Öğrenci kayıtları güvenli yönetim işlemiyle oluşturulmalıdır.';
+if(studentError||progressError)msg('İlerleme verileri alınırken sorun oluştu: '+(studentError?.message||progressError?.message));
 }
 async function studentView(){
 const {data,error}=await db.from('lessons').select('id,title,subject,explanation,week_start,video_url').eq('published',true).order('week_start',{ascending:false});
