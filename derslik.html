@@ -92,7 +92,21 @@ async function teacherView(){
  box.querySelector('[data-field="title"]').value=l.title||'';
  box.querySelector('[data-field="outcome"]').value=l.outcome||'';
  box.querySelector('[data-field="explanation"]').value=l.explanation||'';box.querySelector('[data-field="video_url"]').value=l.video_url||'';
- box.querySelector('[data-cancel-edit]').onclick=()=>box.remove();
+ box.querySelector('[data-cancel-edit]').onclick=()=>box.remove();const preview=document.createElement('div');preview.className='panel';preview.style.cssText='margin:12px 0;background:#eef8ff';box.append(preview);
+const videoField=box.querySelector('[data-field="video_url"]');
+function renderPreview(){
+ preview.replaceChildren();const url=videoField.value.trim();
+ if(!url){preview.textContent='🎥 Bu öğrenme çıktısında video bulunmuyor.';return}
+ let u;try{u=new URL(url);if(u.protocol!=='https:')throw Error('HTTPS bağlantısı gerekli')}catch{preview.textContent='⚠️ Geçerli HTTPS video bağlantısı girin.';return}
+ const link=document.createElement('a');link.href=u.href;link.target='_blank';link.rel='noopener noreferrer';link.textContent='🔗 Video bağlantısını yeni sekmede aç';preview.append(link);
+ const yt=u.hostname==='youtu.be'?u.pathname.substring(1):(['youtube.com','www.youtube.com','m.youtube.com','www.youtube-nocookie.com'].includes(u.hostname)?u.searchParams.get('v')||u.pathname.split('/').pop():'');
+ if(yt&&/^[A-Za-z0-9_-]{11}$/.test(yt)){const iframe=document.createElement('iframe');iframe.src='https://www.youtube-nocookie.com/embed/'+yt;iframe.title='Video önizleme';iframe.loading='lazy';iframe.allowFullscreen=true;iframe.style.cssText='width:100%;aspect-ratio:16/9;border:0;border-radius:12px;margin-top:10px';preview.append(iframe)}
+ else if(/\\.(mp4|webm)$/i.test(u.pathname)){const video=document.createElement('video');video.src=u.href;video.controls=true;video.preload='metadata';video.style.cssText='width:100%;max-height:320px;margin-top:10px';preview.append(video)}
+}
+videoField.addEventListener('change',renderPreview);renderPreview();
+const removeVideo=document.createElement('button');removeVideo.type='button';removeVideo.className='danger-soft';removeVideo.textContent='🗑️ Video bağlantısını kaldır';box.append(removeVideo);
+removeVideo.onclick=()=>{if(!window.confirm('Bu öğrenme çıktısının video bağlantısını kaldırmayı onaylıyor musunuz? Dosya depodan silinmeyecek.'))return;videoField.value='';renderPreview();msg('Bağlantı kaldırılmak üzere işaretlendi. İşlemi tamamlamak için Değişiklikleri Kaydet düğmesine basın.')};
+
  box.querySelector('[data-save-edit]').onclick=async()=>{
  const title=box.querySelector('[data-field="title"]').value.trim(),outcome=box.querySelector('[data-field="outcome"]').value.trim(),explanation=box.querySelector('[data-field="explanation"]').value.trim();
  if(!title||!outcome){window.alert('Kısa ad ve öğrenme çıktısı boş bırakılamaz.');return}
