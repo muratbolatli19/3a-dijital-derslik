@@ -61,17 +61,37 @@ $('form').onsubmit=async e=>{e.preventDefault();const obj={author_id:me.id,subje
 async function generateForLesson(id){const {data:{session}}=await db.auth.getSession();if(!session)throw Error('Oturum açın.');const res=await fetch('https://zhmkyfouskthqgrhvhqp.supabase.co/functions/v1/generate-lesson-activities',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable_YcqB4BO9knYzHk4KKLye3A_ilBb6I9u','Content-Type':'application/json'},body:JSON.stringify({lesson_id:id})});const json=await res.json();if(!res.ok)throw Error(json.error||'Oluşturulamadı');return json;}
 async function generateForWeek(date){const {data:rows,error}=await db.from('lessons').select('id,subject').eq('week_start',date).is('deleted_at',null);if(error)throw error;let total=0;for(const l of rows||[]){const out=await generateForLesson(l.id);total+=out.created||0;}return total;}
 async function teacherView(){
- const {data:lessons,error}=await db.from('lessons').select('id,title,subject,outcome,published,week_start,deleted_at').is('deleted_at',null).order('week_start',{ascending:false});if(error){msg(error.message);return}
+ const {data:lessons,error}=await db.from('lessons').select('id,title,subject,outcome,explanation,published,week_start,deleted_at').is('deleted_at',null).order('week_start',{ascending:false});if(error){msg(error.message);return}
  const {data:acts,error:actError}=await db.from('activities').select('lesson_id,deleted_at').is('deleted_at',null);
  const counts={};for(const a of acts||[])counts[a.lesson_id]=(counts[a.lesson_id]||0)+1;
  $('teacherLessons').innerHTML=lessons?.length?lessons.map(l=>{
  const n=counts[l.id]||0;
  return '<div class="panel"><b>📘 '+esc(l.subject)+' · '+esc(l.title)+'</b><p>'+esc(l.outcome)+'</p><p class="lesson-stat">📅 '+esc(l.week_start)+' · '+(l.published?'🟢 Yayında':'🟡 Taslak')+' · '+n+' etkinlik</p>'+
  (n===0?'<p class="status-warn">⚠️ Bu dersin interaktif etkinlikleri henüz hazırlanmamış. Yayınlama tek başına etkinlik oluşturmaz.</p>':'<p class="status-ok">✅ Etkinlik verileri hazır.</p>')+
- '<button type="button" data-generate="'+esc(l.id)+'">✨ Etkinlik oluştur</button><button data-publish="'+esc(l.id)+'" data-value="'+(!l.published)+'">'+(l.published?'Yayından kaldır':'Yayınla')+'</button>'+
- (n>0?'<a href="ders-gorevleri.html?lesson='+encodeURIComponent(l.id)+'"><button class="alt" type="button">🚀 '+n+' etkinliği aç</button></a>':'')+'<button type="button" class="danger-soft" data-delete-activities="'+esc(l.id)+'" '+(n===0?'disabled':'')+'>Etkinlikleri sil</button><button type="button" class="danger" data-delete-lesson="'+esc(l.id)+'">Öğrenme Çıktısıı ve etkinlikleri sil</button></div>'
+ '<button type="button" class="alt" data-edit-lesson="'+esc(l.id)+'">✏️ Düzenle</button><button type="button" data-generate="'+esc(l.id)+'">✨ Etkinlik oluştur</button><button data-publish="'+esc(l.id)+'" data-value="'+(!l.published)+'">'+(l.published?'Yayından kaldır':'Yayınla')+'</button>'+
+ (n>0?'<a href="ders-gorevleri.html?lesson='+encodeURIComponent(l.id)+'"><button class="alt" type="button">🚀 '+n+' etkinliği aç</button></a>':'')+'<button type="button" class="danger-soft" data-delete-activities="'+esc(l.id)+'" '+(n===0?'disabled':'')+'>Etkinlikleri sil</button><button type="button" class="danger" data-delete-lesson="'+esc(l.id)+'">Öğrenme Çıktısını ve etkinlikleri sil</button></div>'
  }).join(''):'Henüz ders bulunmuyor.';
  if(actError)msg('Etkinlik sayıları alınamadı: '+actError.message);
+ document.querySelectorAll('[data-edit-lesson]').forEach(b=>b.onclick=()=>{
+ const l=lessons.find(x=>x.id===b.dataset.editLesson);if(!l)return;
+ const card=b.closest('.panel');if(card.querySelector('.outcome-editor')){card.querySelector('.outcome-editor').remove();return}
+ const box=document.createElement('div');box.className='panel outcome-editor';
+ box.style.cssText='background:#f5f5ff;border:2px solid #a9b6f6;margin-top:14px';
+ box.innerHTML='<h3>✏️ Öğrenme Çıktısını Düzenle</h3><label>Kısa ad</label><input data-field="title" maxlength="180"><label>Öğrenme Çıktısı</label><textarea data-field="outcome" rows="4"></textarea><label>Kısa konu anlatımı</label><textarea data-field="explanation" rows="4"></textarea><p class="muted">Düzenleme mevcut etkinlikleri ve öğrenci kayıtlarını değiştirmez. İçerik ile etkinlikler uyumlu değilse yeni etkinlik hazırlayın.</p><button type="button" data-save-edit>💾 Değişiklikleri kaydet</button><button type="button" class="alt" data-cancel-edit>İptal</button>';
+ card.append(box);
+ box.querySelector('[data-field="title"]').value=l.title||'';
+ box.querySelector('[data-field="outcome"]').value=l.outcome||'';
+ box.querySelector('[data-field="explanation"]').value=l.explanation||'';
+ box.querySelector('[data-cancel-edit]').onclick=()=>box.remove();
+ box.querySelector('[data-save-edit]').onclick=async()=>{
+ const title=box.querySelector('[data-field="title"]').value.trim(),outcome=box.querySelector('[data-field="outcome"]').value.trim(),explanation=box.querySelector('[data-field="explanation"]').value.trim();
+ if(!title||!outcome){window.alert('Kısa ad ve öğrenme çıktısı boş bırakılamaz.');return}
+ const save=box.querySelector('[data-save-edit]');save.disabled=true;
+ const {error}=await db.from('lessons').update({title,outcome,explanation}).eq('id',l.id).is('deleted_at',null);
+ if(error){msg('Düzenleme kaydedilemedi: '+error.message);save.disabled=false;return}
+ msg('Öğrenme Çıktısı kaydedildi. Mevcut etkinlikler ve öğrenci sonuçları korundu.');await teacherView();
+ };
+ });
  document.querySelectorAll('[data-generate]').forEach(b=>b.onclick=async()=>{b.disabled=true;const before=b.textContent;b.textContent='⏳ Oluşturuluyor…';try{const r=await generateForLesson(b.dataset.generate);const message=r.created?r.created+' etkinlik oluşturuldu.':(r.message||'Yeni etkinlik oluşturulmadı.');msg(message);window.alert(message);await teacherView()}catch(e){msg('Etkinlik oluşturulamadı: '+e.message);window.alert('Etkinlik oluşturulamadı: '+e.message);b.disabled=false;b.textContent=before}});
  document.querySelectorAll('[data-publish]').forEach(b=>b.onclick=async()=>{const {error}=await db.from('lessons').update({published:b.dataset.value==='true'}).eq('id',b.dataset.publish);msg(error?error.message:'Ders durumu güncellendi.');if(!error)teacherView()});
  document.querySelectorAll('[data-delete-activities]').forEach(b=>b.onclick=async()=>{
