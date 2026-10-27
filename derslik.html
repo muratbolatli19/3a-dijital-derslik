@@ -97,7 +97,7 @@ if(actError)msg('Etkinlik bilgisi alınamadı: '+actError.message);
 $('createStudent').onclick=async()=>{
  if(profile?.role!=='teacher')return msg('Öğretmen yetkisi gerekli.');
  const name=$('newStudentName').value.trim(),code=$('newStudentCode').value.trim(),password=$('newStudentPassword').value;
- if(!/^\\d{4,8}$/.test(code)||name.length<5||password.length<12){$('studentActionMessage').textContent='Öğrenci adı, 4–8 haneli kod ve en az 12 karakterli şifre girin.';return}
+ if(!/^\d{4,8}$/.test(code)||name.length<5||password.length<12){$('studentActionMessage').textContent='Öğrenci adı, 4–8 haneli kod ve en az 12 karakterli şifre girin.';return}
  const button=$('createStudent');button.disabled=true;
  try{const {data:{session}}=await db.auth.getSession();if(!session)throw Error('Oturum bulunamadı.');
  const response=await fetch('https://zhmkyfouskthqgrhvhqp.supabase.co/functions/v1/teacher-create-student',{method:'POST',headers:{'Content-Type':'application/json','apikey':'sb_publishable_YcqB4BO9knYzHk4KKLye3A_ilBb6I9u','Authorization':'Bearer '+session.access_token},body:JSON.stringify({name,code,password})});
