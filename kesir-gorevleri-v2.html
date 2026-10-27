@@ -37,6 +37,29 @@ button.outline{background:linear-gradient(120deg,#ffb631,#ff7b53);box-shadow:0 5
 #locked{background:linear-gradient(145deg,#fff,#e8f5ff)}
 footer{font-weight:bold}
 @media(max-width:600px){.panel{padding:13px;border-width:3px}.matchrow{gap:9px}.matchcol{min-width:0}.tile{padding:8px;font-size:13px}.matchrow .tile{min-height:110px!important}.matchrow .tile svg{max-width:85px!important}}
+
+/* Akıllı tahta: ilk etkinlik katlamanın üstünde */
+header{padding-top:12px;padding-bottom:7px}
+header h1{font-size:clamp(26px,3.4vw,38px);margin:2px 0}
+header .pill{font-size:13px;padding:3px 11px;border-width:2px}
+header p{margin:5px 0}
+main{padding-top:4px}
+main>.panel,#app>.panel{margin:8px 0;padding:13px 19px}
+#app>.panel:first-child h2{font-size:23px;margin:2px 0}
+#app>.panel:first-child .muted{font-size:13px}
+#counter{padding:4px 9px}
+.bar{height:11px}
+#prompt{font-size:23px;margin:4px 0;padding:10px 14px}
+#task{padding:5px 0 9px}
+#task:before{padding:5px;margin-bottom:8px}
+.tile{min-height:80px;padding:7px}
+#task .matchrow .tile{min-height:112px}
+#task .matchrow .tile svg{max-width:105px}
+#task .matchrow .tile{font-size:14px}
+#task .grid .tile svg{max-width:115px}
+#feedback{margin:8px 0}
+footer{padding:8px}
+@media(min-width:900px){#app>.panel:first-child .flex{align-items:center}#app>.panel:first-child .flex h2{font-size:22px}}
 </style></head>
 <body><header><div class="pill">🚀 3/A Uzay Akademisi</div><h1>Kesir Dedektifleri</h1><div>Özel Süleymaniye Okulları Seyrice İlkokulu · Öğretmen: Murat Bolatlı</div><p><a href="derslik.html">← Dersliğe dön</a></p></header>
 <main><section class="panel" id="locked"><h2>Öğrenci hesabıyla giriş yapın</h2><p>Görevlerin sonuçları yalnızca yetkili öğrenci hesabına kaydedilir. Öğretmen hesabı bu sayfayı önizleyebilir.</p><button id="goLogin">Giriş ekranına git</button></section>
@@ -75,7 +98,7 @@ else if(['reasoning','multiple_choice'].includes(a.kind)){(c.options||[]).forEac
 else if(a.kind==='true_false'){['Doğru','Yanlış'].forEach((o,i)=>el.append(btn(o,()=>{selected=[i===0];el.querySelectorAll('button').forEach((b,j)=>b.classList.toggle('selected',j===i))},'choice')));activateCheck(()=>selected.length>0&&selected[0]===c.correct,c.reason||'Bir daha düşün.')}
 }
 function activateCheck(test,hint){$('check').classList.remove('hide');$('check').onclick=async()=>{if(solved)return;attempt++;let ok=test();if(ok){solved=true;praise(true,'Çok güzel düşünmüşsün.');$('check').classList.add('hide');$('next').classList.remove('hide');if(profile.role==='student'){const {error}=await db.from('progress').upsert({student_id:me.id,activity_id:activities[idx].id,status:'completed',score:Math.max(40,100-(attempt-1)*20),attempts:attempt,updated_at:new Date().toISOString()},{onConflict:'student_id,activity_id'});if(error)$('status').textContent='İlerlemen kaydedilemedi: '+error.message}}else praise(false,hint)}}
-$('next').onclick=()=>{idx++;draw()};
-async function start(){const {data:{user},error:e}=await db.auth.getUser();if(e||!user)return;me=user;const {data:p}=await db.from('profiles').select('role,display_name,active').eq('id',user.id).maybeSingle();if(!p?.active)return;profile=p;$('locked').classList.add('hide');$('app').classList.remove('hide');$('greet').textContent='Hoş geldin, '+p.display_name+'!';const {data:lessons,error:lerr}=await db.from('lessons').select('id,title,outcome,published').order('created_at',{ascending:false});if(lerr){$('status').textContent=lerr.message;return}const found=lessons?.find(l=>/MAT\.3\.1\.9|kesir|çeyrek|yarım/i.test(l.outcome+' '+l.title) && (l.published || p.role==='teacher'));if(!found){$('prompt').textContent='Kesir dersi henüz yayınlanmadı.';return}lesson=found;$('lessonTitle').textContent=found.title+(p.role==='teacher'?' · Öğretmen önizlemesi':'');const {data:acts,error:err}=await db.from('activities').select('id,ordinal,kind,prompt,content').eq('lesson_id',found.id).order('ordinal');if(err){$('status').textContent=err.message;return}activities=acts||[];draw()}
+$('next').onclick=()=>{idx++;draw();document.querySelector('#app>.panel:last-child').scrollIntoView({behavior:'smooth',block:'start'})};
+async function start(){const {data:{user},error:e}=await db.auth.getUser();if(e||!user)return;me=user;const {data:p}=await db.from('profiles').select('role,display_name,active').eq('id',user.id).maybeSingle();if(!p?.active)return;profile=p;$('locked').classList.add('hide');$('app').classList.remove('hide');$('greet').textContent='Hoş geldin, '+p.display_name+'!';const {data:lessons,error:lerr}=await db.from('lessons').select('id,title,outcome,published').order('created_at',{ascending:false});if(lerr){$('status').textContent=lerr.message;return}const found=lessons?.find(l=>/MAT\.3\.1\.9|kesir|çeyrek|yarım/i.test(l.outcome+' '+l.title) && (l.published || p.role==='teacher'));if(!found){$('prompt').textContent='Kesir dersi henüz yayınlanmadı.';return}lesson=found;$('lessonTitle').textContent=found.title+(p.role==='teacher'?' · Öğretmen önizlemesi':'');const {data:acts,error:err}=await db.from('activities').select('id,ordinal,kind,prompt,content').eq('lesson_id',found.id).order('ordinal');if(err){$('status').textContent=err.message;return}activities=acts||[];draw();}
 start();
 </script></body></html>
