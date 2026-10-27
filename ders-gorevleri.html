@@ -123,7 +123,7 @@ $('introVisual').textContent=visuals[found.subject]||'🌟';
 $('introVisual').style.cssText='font-size:clamp(30px,5vw,62px);text-align:center;padding:18px;background:linear-gradient(110deg,#fff4c5,#dff8ff);border-radius:18px';
 const scenes={
 'Matematik':[['🍕','Bir pizza bir bütündür.'],['🍕  ➗  2','İki eş parçadan biri yarımdır.'],['🥧  ➗  4','Dört eş parçadan biri çeyrektir.'],['½  =  ¼ + ¼','İki çeyrek bir yarıma eşittir.'],['⭐','Parçalar mutlaka eş olmalıdır!']],
-'Türkçe':[['📚','Atatürk çok kitap okurmuş.'],['🇹🇷','Başlıklardan metnin konusunu tahmin ederiz.'],['✍️','Cümle büyük harfle başlar.'],['🏙️','Ankara ve Ayşe gibi özel adlar büyük harfle yazılır.'],['⭐','Metni oku, ana düşünceyi bul!']],
+'Türkçe':[['📚','Kitap okuyarak iyilik ve yardımlaşmayı öğreniriz.'],['🤲','Okuduğumuz metinde merhamet ve dürüstlüğü keşfederiz.'],['✍️','Cümle büyük harfle başlar.'],['🏙️','Ankara ve Ayşe gibi özel adlar büyük harfle yazılır.'],['⭐','Metni oku, ana düşünceyi bul!']],
 'Fen Bilimleri':[['👀 👂','Canlılar çevrelerini farklı duyularıyla algılar.'],['🐕 👃','Köpeklerin koku alma duyusu güçlüdür.'],['🦇 🔊','Yarasalar yankıdan yararlanabilir.'],['🦉 🌙','Baykuşlar az ışıkta görebilir.'],['⭐','Canlılar çevreyi aynı yollarla algılamaz.']],
 'Hayat Bilgisi':[['🧼','Ellerimizi sabunla yıkarız.'],['🥗','Dengeli beslenmek önemlidir.'],['💧','Gün boyunca yeterince su içeriz.'],['🏃 💤','Hareket eder ve düzenli uyuruz.'],['⭐','Sağlıklı alışkanlıkları her gün sürdürürüz.']]};
 let cinemaTimer=null,cinemaStep=0,cinemaPlaying=false;
@@ -138,7 +138,7 @@ function motionArt(subject,stage){
  paths.push('<path class="slice" d="M110 85 L'+x+' '+y+' A69 69 0 0 1 '+x2+' '+y2+' Z" fill="'+(i<fill?'#ffaf33':'#ffe6b1')+'" stroke="#ffffff" stroke-width="4"/>')}
  return '<div class="motion-stage"><svg viewBox="0 0 220 170" role="img" aria-label="Hareketli kesir modeli">'+paths.join('')+'</svg><span class="spark">'+(['🍕','½','¼','2/4','⭐'][stage])+'</span></div>';
  }
- const arr={'Türkçe':[['📚','✨'],['🇹🇷','📖'],['✍️','🔠'],['🏙️','📝'],['🌟','📚']],'Fen Bilimleri':[['👀','👂'],['🐕','👃'],['🦇','🔊'],['🦉','🌙'],['🌎','🔎']],'Hayat Bilgisi':[['🧼','🫧'],['🥗','🍎'],['💧','🥛'],['🏃','💤'],['💚','⭐']]};
+ const arr={'Türkçe':[['📚','✨'],['🤲','📖'],['✍️','🔠'],['🏙️','📝'],['🌟','📚']],'Fen Bilimleri':[['👀','👂'],['🐕','👃'],['🦇','🔊'],['🦉','🌙'],['🌎','🔎']],'Hayat Bilgisi':[['🧼','🫧'],['🥗','🍎'],['💧','🥛'],['🏃','💤'],['💚','⭐']]};
  const actors=(arr[subject]||arr.Türkçe)[stage];
  return '<div class="motion-stage"><span class="actor">'+actors[0]+'</span><span class="spark">✦</span><span class="actor">'+actors[1]+'</span></div>';
 }
