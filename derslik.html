@@ -73,8 +73,20 @@ async function teacherView(){
  document.querySelectorAll('[data-publish]').forEach(b=>b.onclick=async()=>{const {error}=await db.from('lessons').update({published:b.dataset.value==='true'}).eq('id',b.dataset.publish);msg(error?error.message:'Ders durumu güncellendi.');if(!error)teacherView()});
  const {data:students}=await db.from('profiles').select('display_name,student_code').eq('role','student').order('display_name');$('studentList').textContent=students?.length?students.map(s=>s.display_name+' ('+(s.student_code||'kod yok')+')').join(' · '):'Henüz tanımlı öğrenci yok.';
 }
-async function studentView(){const {data,error}=await db.from('lessons').select('id,title,subject,explanation,week_start,video_url').eq('published',true).order('week_start',{ascending:false});if(error){msg(error.message);return}
-$('studentLessons').innerHTML=data?.length?data.map(l=>'<div class="panel"><h3>'+esc(l.subject)+' · '+esc(l.title)+'</h3><p>'+esc(l.explanation)+'</p>'+videoHTML(l.video_url)+'<p class="muted">'+esc(l.week_start)+'</p></div>').join(''):'Henüz yayınlanmış bir ders yok.'}
+async function studentView(){
+const {data,error}=await db.from('lessons').select('id,title,subject,explanation,week_start,video_url').eq('published',true).order('week_start',{ascending:false});
+if(error){msg(error.message);return}
+const {data:activities, error:actError}=await db.from('activities').select('lesson_id');
+const counts={};for(const x of activities||[])counts[x.lesson_id]=(counts[x.lesson_id]||0)+1;
+$('studentLessons').innerHTML=data?.length?data.map(l=>{
+const n=counts[l.id]||0;
+return '<div class="panel"><h3>📚 '+esc(l.subject)+' · '+esc(l.title)+'</h3><p>'+esc(l.explanation)+'</p>'+
+videoHTML(l.video_url)+'<p class="muted">📅 '+esc(l.week_start)+'</p>'+
+(n>0&&l.subject==='Matematik'?'<a href="kesir-gorevleri-v2.html"><button>🚀 '+n+' Kesir görevini başlat</button></a>':
+'<p class="notice">Bu dersin etkinlikleri henüz yayınlanmadı. Konu anlatımını inceleyebilirsiniz.</p>')+'</div>'
+}).join(''):'Henüz yayınlanmış bir ders yok.';
+if(actError)msg('Etkinlik bilgisi alınamadı: '+actError.message);
+}
 
 let parsedWeek=[];
 $('weeklyParse').onclick=()=>{
