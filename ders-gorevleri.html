@@ -155,9 +155,11 @@ const scenes={
 'Fen Bilimleri':[['👀 👂','Canlılar çevrelerini farklı duyularıyla algılar.'],['🐕 👃','Köpeklerin koku alma duyusu güçlüdür.'],['🦇 🔊','Yarasalar yankıdan yararlanabilir.'],['🦉 🌙','Baykuşlar az ışıkta görebilir.'],['⭐','Canlılar çevreyi aynı yollarla algılamaz.']],
 'Hayat Bilgisi':[['🧼','Ellerimizi sabunla yıkarız.'],['🥗','Dengeli beslenmek önemlidir.'],['💧','Gün boyunca yeterince su içeriz.'],['🏃 💤','Hareket eder ve düzenli uyuruz.'],['⭐','Sağlıklı alışkanlıkları her gün sürdürürüz.']]};
 let cinemaTimer=null,cinemaStep=0,cinemaPlaying=false;
-const cinemaFrames=scenes[found.subject]||scenes.Matematik;
+const oddEvenLesson=found.subject==='Matematik'&&/tek.{0,20}çift|çift.{0,20}tek|MAT\.3\.1\.[56]/i.test((found.title||'')+' '+(found.outcome||''));
+const cinemaFrames=oddEvenLesson?[['🔢','Sayılar tek veya çift olarak sınıflandırılır.'],['2️⃣ 4️⃣ 6️⃣','Birler basamağı 0, 2, 4, 6, 8 olan sayılar çifttir.'],['1️⃣ 3️⃣ 5️⃣','Birler basamağı 1, 3, 5, 7, 9 olan sayılar tektir.'],['7 + 5 = 12','İki tek sayının toplamı çifttir.'],['8 + 3 = 11','Çift ve tek sayının toplamı tektir.']]:scenes[found.subject]||scenes.Matematik;
 
 function motionArt(subject,stage){
+ if(oddEvenLesson)return '<div class="motion-stage"><span class="actor">'+['🔢','2️⃣','1️⃣','➕','✅'][stage]+'</span><span class="spark">✦</span><span class="actor">'+['✨','8️⃣','9️⃣','1️⃣2️⃣','1️⃣1️⃣'][stage]+'</span></div>';
  if(subject==='Matematik'){
  const count=[1,2,4,4,4][stage],fill=[1,1,1,2,1][stage],paths=[];
  const cx=110,cy=85,r=69;
