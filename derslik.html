@@ -53,11 +53,11 @@ $('studentLessons').innerHTML=data?.length?data.map(l=>'<div class="panel"><h3>'
 
 let parsedWeek=[];
 $('weeklyParse').onclick=()=>{
- const text=$('weeklyText').value.replace(/<br\\s*\\/?>/gi,' ').replace(/&#x[A-Fa-f0-9]+;/g,' ');
- const d=text.match(/(\\d{1,2})\\s*[-–]\\s*\\d{1,2}\\s*(EKİM|KASIM|ARALIK|EYLÜL|OCAK|ŞUBAT|MART|NİSAN|MAYIS|HAZİRAN)/i);
+ const text=$('weeklyText').value.replace(/<br\s*\/?>/gi,' ').replace(/&#x[A-Fa-f0-9]+;/g,' ');
+ const d=text.match(/(\d{1,2})\s*[-–]\s*\d{1,2}\s*(EKİM|KASIM|ARALIK|EYLÜL|OCAK|ŞUBAT|MART|NİSAN|MAYIS|HAZİRAN)/i);
  const months={'OCAK':'01','ŞUBAT':'02','MART':'03','NİSAN':'04','MAYIS':'05','HAZİRAN':'06','EYLÜL':'09','EKİM':'10','KASIM':'11','ARALIK':'12'};
  const date=d?'2026-'+months[d[2].toLocaleUpperCase('tr-TR')]+'-'+d[1].padStart(2,'0'):'';
- const row=text.split('\\n').find(x=>x.includes('MAT.3.')&&x.includes('FB.3.')&&x.includes('HB.3.'));
+ const row=text.split('\n').find(x=>x.includes('MAT.3.')&&x.includes('FB.3.')&&x.includes('HB.3.'));
  const cells=row?row.split('|').map(x=>x.replace(/<[^>]+>/g,' ').trim()).filter(Boolean):[];
  const index=cells.findIndex(x=>x.includes('MAT.3.'));
  if(!date||index<1||cells.length<index+3){msg('Plan tablosunda tarihi veya dört dersi ayıramadım. Markdown tablo olarak yapıştırın.');$('weeklySave').classList.add('hidden');return}
