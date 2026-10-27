@@ -28,7 +28,7 @@ button.danger{background:#b72e55;box-shadow:0 4px 0 #7a1737;color:white}button.d
 <div id="teacher" class="hidden"><div class="panel teacher-hero"><h2>✨ Murat Bolatlı · Öğretmen Kontrol Merkezi</h2><p>📚 Haftalık planlarınızı yönetin, 🚀 etkinliklere ulaşın, 📊 öğrencilerin ilerlemesini takip edin.</p></div><div class="panel"><h3>📚 Haftalık öğrenme çıktılarını toplu ekle</h3><p>Plan tablosunu yapıştırın; dört dersin öğrenme çıktısıını ve üstteki tarihi otomatik ayırıp önizleyin.</p><textarea id="weeklyText" style="min-height:170px" placeholder="3. SINIFLAR ZÜMRESİ HAFTALIK DERS PLANI (7.HAFTA)(26-30 EKİM)&#10;TÜRKÇE ... | MATEMATİK ..."></textarea><button id="weeklyParse" type="button">Planı önizle</button><div id="weeklyFields"></div><button id="weeklySave" class="hidden" type="button">Dört dersi taslak kaydet</button></div>
 <div class="panel"><h3>Yeni Öğrenme Çıktısı</h3><form id="form">
 <div class="grid"><div><label>Ders</label><select id="subject"><option>Matematik</option><option>Türkçe</option><option>Fen Bilimleri</option><option>Hayat Bilgisi</option></select></div><div><label>Hafta başlangıcı</label><input type="date" id="week" required></div></div>
-<label>Dersin başlığı</label><input id="title" required maxlength="180" placeholder="Bütün, yarım ve çeyrek">
+<label>Öğrenme Çıktısı Kısa Adı (yalnızca panelde tanımlama için)</label><input id="title" required maxlength="180" placeholder="Bütün, yarım ve çeyrek">
 <label>Öğrenme Çıktısı</label><textarea id="outcome" required placeholder="MAT.3.1.9 ..."></textarea>
 <label>Kısa anlatım</label><textarea id="explanation" placeholder="Öğrencinin okuyacağı açıklama"></textarea>
 <label>Video bağlantısı (isteğe bağlı, doğrudan MP4 veya YouTube)</label><input id="video" type="url" placeholder="https://...">
@@ -157,7 +157,7 @@ $('weeklySave').onclick=async()=>{
  if(readError)return msg(readError.message);
  const done=new Set((existing||[]).map(x=>x.subject));
  const payload=parsedWeek.filter(x=>!done.has(x.subject)).map(x=>({...x,title:x.outcome.slice(0,100),explanation:x.outcome,author_id:me.id,published:false}));
- if(!payload.length)return msg('Bu haftanın dersleri zaten kayıtlı, tekrar eklenmedi.');
+ if(!payload.length){try{const n=await generateForWeek(parsedWeek[0].week_start);msg('Bu haftanın mevcut öğrenme çıktıları korundu. '+n+' eksik etkinlik oluşturuldu.')}catch(e){msg('Etkinlik üretimi: '+e.message)}await teacherView();return}
  const {error}=await db.from('lessons').insert(payload);
  if(error){msg(error.message)}else{try{const n=await generateForWeek(parsedWeek[0].week_start);msg(payload.length+' ders kaydedildi. '+n+' etkinlik otomatik oluşturuldu.')}catch(e){msg('Dersler kaydedildi; bazı etkinlikler üretilemedi: '+e.message)}await teacherView()}
 };
