@@ -33,7 +33,7 @@ button.danger{background:#b72e55;box-shadow:0 4px 0 #7a1737;color:white}button.d
 <label>Kısa anlatım</label><textarea id="explanation" placeholder="Öğrencinin okuyacağı açıklama"></textarea>
 <label>Video bağlantısı (isteğe bağlı, doğrudan MP4 veya YouTube)</label><input id="video" type="url" placeholder="https://...">
 <button type="submit">Taslak dersi kaydet</button></form><p class="muted">Dersler başlangıçta taslak kalır. Yayınlamak için aşağıdaki listeden Yayınla seçin.</p></div>
-<div class="panel"><h3>Ders yönetimi</h3><div id="teacherLessons"></div></div>
+<div class="panel"><h3>Ders yönetimi</h3><div id="teacherLessons"></div><div class="panel" style="background:#fff9ef;border:2px solid #f3dbac"><h3>🗑️ Çöp Kutusu · Geri Yükle</h3><p class="muted">Silinen kazanımlar ve etkinlikler kalıcı olarak yok edilmez. Öğrenci ilerlemeleri saklanır.</p><div id="trashLessons"></div><div id="trashActivities"></div></div></div>
 <div class="panel"><h3>📊 Öğrenci hesapları ve ilerleme</h3><div class="panel"><h4>👤 Yeni öğrenci hesabı oluştur</h4><p class="muted">Sadece öğretmen yetkisiyle çalışır. Öğrenci kodu 4–8 rakam, ilk şifre en az 12 karakter olmalıdır.</p><div class="grid"><div><label>Öğrenci adı soyadı</label><input id="newStudentName" autocomplete="off" placeholder="Öğrenci adı soyadı"></div><div><label>Öğrenci kodu</label><input id="newStudentCode" autocomplete="off" inputmode="numeric" placeholder="1001"></div><div><label>İlk şifre</label><input id="newStudentPassword" type="password" autocomplete="new-password" placeholder="En az 12 karakter"></div></div><button id="createStudent" type="button">Öğrenci hesabını güvenli oluştur</button><p id="studentActionMessage" aria-live="polite"></p></div><div id="progressSummary" class="grid"></div><div id="progressDetails"></div><p>Gerçek öğrenci profilleri yalnızca yetkili yönetim işleminden sonra oluşturulacaktır. Öğrenci şifrelerini GitHub koduna yazmayın.</p><div id="studentList"></div></div></div>
 <div id="student" class="hidden"><h3>Haftalık derslerim</h3><div id="studentLessons"></div></div>
 </div><p id="status" role="status" aria-live="polite"></p>
@@ -59,8 +59,8 @@ $('reset').onclick=async()=>{const {error}=await db.auth.resetPasswordForEmail($
 $('logout').onclick=async()=>{await db.auth.signOut();await refresh()};
 $('form').onsubmit=async e=>{e.preventDefault();const obj={author_id:me.id,subject:$('subject').value,week_start:$('week').value,title:$('title').value.trim(),outcome:$('outcome').value.trim(),explanation:$('explanation').value.trim(),video_url:$('video').value.trim()||null,published:false};const {error}=await db.from('lessons').insert(obj);msg(error?error.message:'Ders taslak olarak kaydedildi.');if(!error){e.target.reset();await teacherView()}};
 async function teacherView(){
- const {data:lessons,error}=await db.from('lessons').select('id,title,subject,outcome,published,week_start').order('week_start',{ascending:false});if(error){msg(error.message);return}
- const {data:acts,error:actError}=await db.from('activities').select('lesson_id');
+ const {data:lessons,error}=await db.from('lessons').select('id,title,subject,outcome,published,week_start,deleted_at').is('deleted_at',null).order('week_start',{ascending:false});if(error){msg(error.message);return}
+ const {data:acts,error:actError}=await db.from('activities').select('lesson_id,deleted_at').is('deleted_at',null);
  const counts={};for(const a of acts||[])counts[a.lesson_id]=(counts[a.lesson_id]||0)+1;
  $('teacherLessons').innerHTML=lessons?.length?lessons.map(l=>{
  const n=counts[l.id]||0;
@@ -73,20 +73,30 @@ async function teacherView(){
  document.querySelectorAll('[data-publish]').forEach(b=>b.onclick=async()=>{const {error}=await db.from('lessons').update({published:b.dataset.value==='true'}).eq('id',b.dataset.publish);msg(error?error.message:'Ders durumu güncellendi.');if(!error)teacherView()});
  document.querySelectorAll('[data-delete-activities]').forEach(b=>b.onclick=async()=>{
  const l=lessons.find(x=>x.id===b.dataset.deleteActivities);if(!l)return;
- if(!window.confirm('“'+l.title+'” kazanımına ait tüm etkinlikleri silmeyi onaylıyor musunuz?\\n\\nKazanım korunacak, etkinlikler ve bunlara bağlı öğrenci ilerlemeleri kalıcı olarak silinecek.'))return;
+ if(!window.confirm('“'+l.title+'” kazanımına ait tüm etkinlikleri silmeyi onaylıyor musunuz?\\n\\nKazanım korunacak, etkinlikler Çöp Kutusu’na taşınacak; öğrenci sonuçları korunacak.'))return;
  b.disabled=true;
- const {error}=await db.from('activities').delete().eq('lesson_id',l.id);
- msg(error?'Etkinlikler silinemedi: '+error.message:'Etkinlikler silindi; kazanım korundu.');
+ const {error}=await db.from('activities').update({deleted_at:new Date().toISOString()}).eq('lesson_id',l.id).is('deleted_at',null);
+ msg(error?'Etkinlikler silinemedi: '+error.message:'Etkinlikler Çöp Kutusu’na taşındı; kazanım korundu.');
  await teacherView();
  });
  document.querySelectorAll('[data-delete-lesson]').forEach(b=>b.onclick=async()=>{
  const l=lessons.find(x=>x.id===b.dataset.deleteLesson);if(!l)return;
- if(!window.confirm('“'+l.title+'” kazanımını ve bağlı tüm etkinlikleri silmeyi onaylıyor musunuz?\\n\\nÖğrenci ilerlemeleri de dahil olmak üzere bu işlem geri alınamaz.'))return;
+ if(!window.confirm('“'+l.title+'” kazanımını ve bağlı tüm etkinlikleri silmeyi onaylıyor musunuz?\\n\\nKazanım Çöp Kutusu’na taşınacak ve daha sonra geri yüklenebilecek.'))return;
  b.disabled=true;
- const {error}=await db.from('lessons').delete().eq('id',l.id);
- msg(error?'Kazanım silinemedi: '+error.message:'Kazanım ve bağlı etkinlikleri silme işlemi tamamlandı.');
+ const {error}=await db.from('lessons').update({deleted_at:new Date().toISOString(),published:false}).eq('id',l.id).is('deleted_at',null);
+ msg(error?'Kazanım silinemedi: '+error.message:'Kazanım Çöp Kutusu’na taşındı.');
  await teacherView();
  });
+
+ const {data:removedLessons, error:trashError}=await db.from('lessons').select('id,title,subject,deleted_at').not('deleted_at','is',null).order('deleted_at',{ascending:false});
+ const {data:removedActivities}=await db.from('activities').select('id,lesson_id,deleted_at').not('deleted_at','is',null);
+ const removedCounts={};for(const a of removedActivities||[])removedCounts[a.lesson_id]=(removedCounts[a.lesson_id]||0)+1;
+ $('trashLessons').innerHTML=removedLessons?.length?'<h4>Silinen kazanımlar</h4>'+removedLessons.map(l=>'<div class="panel">📘 '+esc(l.subject)+' · '+esc(l.title)+'<button type="button" data-restore-lesson="'+esc(l.id)+'">↩️ Kazanımı geri yükle</button></div>').join(''):'<p>Silinmiş kazanım bulunmuyor.</p>';
+ const archivedActivityGroups=(lessons||[]).filter(l=>removedCounts[l.id]>0);
+ $('trashActivities').innerHTML=archivedActivityGroups.length?'<h4>Silinen etkinlikler</h4>'+archivedActivityGroups.map(l=>'<div class="panel">🎮 '+esc(l.subject)+' · '+esc(l.title)+' ('+removedCounts[l.id]+' etkinlik)<button type="button" data-restore-activities="'+esc(l.id)+'">↩️ Etkinlikleri geri yükle</button></div>').join(''):'';
+ if(trashError)msg('Çöp kutusu alınamadı: '+trashError.message);
+ document.querySelectorAll('[data-restore-lesson]').forEach(b=>b.onclick=async()=>{if(!window.confirm('Bu kazanımı geri yüklemek istiyor musunuz?'))return;b.disabled=true;const {error}=await db.from('lessons').update({deleted_at:null,published:false}).eq('id',b.dataset.restoreLesson);msg(error?error.message:'Kazanım taslak olarak geri yüklendi.');await teacherView()});
+ document.querySelectorAll('[data-restore-activities]').forEach(b=>b.onclick=async()=>{if(!window.confirm('Bu dersin arşivdeki etkinliklerini geri yüklemek istiyor musunuz?'))return;b.disabled=true;const {error}=await db.from('activities').update({deleted_at:null}).eq('lesson_id',b.dataset.restoreActivities).not('deleted_at','is',null);msg(error?error.message:'Etkinlikler geri yüklendi.');await teacherView()});
  const {data:students,error:studentError}=await db.from('profiles').select('id,display_name,student_code').eq('role','student').order('display_name');
 const {data:records,error:progressError}=await db.from('progress').select('student_id,activity_id,status,score,updated_at');
 const byStudent={};for(const x of records||[]){if(!byStudent[x.student_id])byStudent[x.student_id]={completed:0,attempts:0};byStudent[x.student_id].attempts++;if(x.status==='completed')byStudent[x.student_id].completed++}
