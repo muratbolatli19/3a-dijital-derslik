@@ -106,9 +106,9 @@ $('studentList').innerHTML=students?.length?students.map(x=>'<div class="panel">
 if(studentError||progressError)msg('İlerleme verileri alınırken sorun oluştu: '+(studentError?.message||progressError?.message));
 }
 async function studentView(){
-const {data,error}=await db.from('lessons').select('id,title,subject,explanation,week_start,video_url').eq('published',true).order('week_start',{ascending:false});
+const {data,error}=await db.from('lessons').select('id,title,subject,explanation,week_start,video_url').eq('published',true).is('deleted_at',null).order('week_start',{ascending:false});
 if(error){msg(error.message);return}
-const {data:activities, error:actError}=await db.from('activities').select('lesson_id');
+const {data:activities, error:actError}=await db.from('activities').select('lesson_id').is('deleted_at',null);
 const counts={};for(const x of activities||[])counts[x.lesson_id]=(counts[x.lesson_id]||0)+1;
 $('studentLessons').innerHTML=data?.length?data.map(l=>{
 const n=counts[l.id]||0;
