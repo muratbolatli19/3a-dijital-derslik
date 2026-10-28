@@ -14,7 +14,9 @@ button:hover{filter:brightness(1.06)}input:focus,textarea:focus,select:focus{out
 .notice{background:#fff4d8;border-left:5px solid #f6b84d}
 .teacher-hero{background:linear-gradient(115deg,#f6ecff,#e4f7ff 65%,#fff0d7)!important;border:2px solid #dad2fb!important}
 .lesson-stat{font-size:13px;color:#566588}.status-warn{color:#a45c15;font-weight:700}.status-ok{color:#197c55;font-weight:700}
-button.danger{background:#b72e55;box-shadow:0 4px 0 #7a1737;color:white}button.danger-soft{background:#fff0f1;color:#a72748;box-shadow:0 3px 0 #eeb7c5;border:1px solid #dd91a6}</style>
+button.danger{background:#b72e55;box-shadow:0 4px 0 #7a1737;color:white}button.danger-soft{background:#fff0f1;color:#a72748;box-shadow:0 3px 0 #eeb7c5;border:1px solid #dd91a6}
+/* Sol gezinti: bölümler tek tek açılır, mevcut işlevler korunur */
+.dashboard-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:18px;align-items:start}.dashboard-sidebar{position:sticky;top:12px;background:#fff;border:1px solid #d8dffa;border-radius:18px;padding:12px;box-shadow:0 8px 24px #5549aa14}.dashboard-sidebar h3{margin:4px 8px 12px;font-size:16px}.dashboard-sidebar button{width:100%;text-align:left;margin:4px 0;background:#eef1ff;color:#293579;box-shadow:none;font-size:14px;padding:12px}.dashboard-sidebar button.active{background:#514cc5;color:#fff}.dashboard-content{min-width:0}.dashboard-page:not(.active){display:none!important}.dashboard-page>.panel:first-child{margin-top:0}.mobile-menu-toggle{display:none}.dashboard-sidebar .nav-close{display:none}@media(max-width:760px){.dashboard-layout{display:block}.dashboard-sidebar{display:none;position:static;margin:8px 0 16px}.dashboard-layout.menu-open .dashboard-sidebar{display:block}.mobile-menu-toggle{display:inline-block!important;margin:8px 0}.dashboard-content{width:100%}}</style>
 </head><body><header><h1>🚀 3/A Dijital Derslik</h1><div>Özel Süleymaniye Okulları Seyrice İlkokulu</div><div>Öğretmen: <strong>Murat Bolatlı</strong></div></header>
 <main class="wrap"><div class="panel"><h3>🪐 Etkileşimli Kesir Görevleri</h3><p>Matematik öğrenme çıktısınına bağlı 5 görsel ve düşünme etkinliği. Öğretmen olarak önizleyebilir, yayınladıktan sonra öğrenci hesaplarıyla tamamlatabilirsiniz.</p><a href="kesir-gorevleri-v2.html"><button>Etkinlikleri aç →</button></a></div>
 <div class="panel" id="auth">
@@ -45,12 +47,36 @@ const $=id=>document.getElementById(id), msg=s=>{$('status').textContent=s};
 let me=null,profile=null;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function videoHTML(url){if(!url)return '';try{const u=new URL(url);if(u.protocol!=='https:')return '';let id=null;if(u.hostname==='youtu.be')id=u.pathname.slice(1);if(['youtube.com','www.youtube.com'].includes(u.hostname))id=u.searchParams.get('v');if(id&&/^[a-zA-Z0-9_-]{11}$/.test(id))return '<iframe title="Konu anlatım videosu" width="100%" height="240" loading="lazy" sandbox="allow-scripts allow-same-origin allow-presentation" allowfullscreen src="https://www.youtube-nocookie.com/embed/'+id+'"></iframe>';if(u.pathname.toLowerCase().endsWith('.mp4'))return '<video controls width="100%" src="'+esc(url)+'"></video>'}catch(e){}return '<p>Video bağlantısı desteklenmedi. HTTPS MP4 veya YouTube bağlantısı ekleyin.</p>'}
+function setupDashboardNavigation(role){
+ const root=$(role);if(root.dataset.navigationReady)return;
+ const children=Array.from(root.children);
+ const layout=document.createElement('div');layout.className='dashboard-layout';
+ const menu=document.createElement('nav');menu.className='dashboard-sidebar';menu.setAttribute('aria-label','Derslik bölümleri');
+ const label=document.createElement('h3');label.textContent='🪐 '+(role==='teacher'?'Öğretmen Menüsü':'Öğrenci Menüsü');menu.append(label);
+ const content=document.createElement('div');content.className='dashboard-content';
+ const toggle=document.createElement('button');toggle.className='mobile-menu-toggle alt';toggle.type='button';toggle.textContent='☰ Bölümleri aç';toggle.setAttribute('aria-expanded','false');
+ toggle.onclick=()=>{layout.classList.toggle('menu-open');toggle.setAttribute('aria-expanded',String(layout.classList.contains('menu-open')))};
+ const groups=role==='teacher'?
+ [{title:'🏠 Genel Bakış',indices:[5,0]},{title:'👥 Öğrenciler ve Profiller',indices:[9]},{title:'📚 Kazanımlar ve Dersler',indices:[6,7,8]},{title:'🎮 Oyunlar',indices:[1,2]},{title:'📝 Online Testler',indices:[3,4]}]:
+ [{title:'🚀 Benim Profilim',indices:[1]},{title:'📚 Haftalık Derslerim',indices:[2,3]},{title:'🎮 Testler ve Yıldız Ligi',indices:[0]}];
+ const pages=[];
+ for(let i=0;i<groups.length;i++){
+  const g=groups[i],page=document.createElement('section');page.className='dashboard-page';page.setAttribute('aria-label',g.title);
+  for(const j of g.indices)if(children[j])page.append(children[j]);
+  content.append(page);pages.push(page);
+  const btn=document.createElement('button');btn.type='button';btn.textContent=g.title;
+  btn.onclick=()=>{pages.forEach((p,k)=>p.classList.toggle('active',k===i));Array.from(menu.querySelectorAll('button')).forEach((b,k)=>{b.classList.toggle('active',k===i);b.setAttribute('aria-current',k===i?'page':'false')});layout.classList.remove('menu-open');toggle.setAttribute('aria-expanded','false')};menu.append(btn);
+  if(i===0)btn.click();
+ }
+ root.append(toggle,layout);layout.append(menu,content);root.dataset.navigationReady='true';
+}
 async function refresh(){const {data:{user}}=await db.auth.getUser();me=user;if(!me){$('auth').classList.remove('hidden');$('main').classList.add('hidden');return}
 $('auth').classList.add('hidden');$('main').classList.remove('hidden');
 const {data:p,error}=await db.from('profiles').select('role,display_name,active').eq('id',me.id).maybeSingle();
 profile=p;if(error||!p||!p.active){$('greeting').textContent='Hesap doğrulama bekliyor';$('role').textContent='E-posta hesabınız oluşturuldu. Öğretmen yetkisi güvenli yönetim ekranından atanmalıdır.';$('teacher').classList.add('hidden');$('student').classList.add('hidden');return}
 $('greeting').textContent='Hoş geldiniz, '+p.display_name;if(p.role==='student'){const holder=rocketAvatar(p.display_name,true);$('greeting').prepend(holder);const signed=await db.storage.from('student-avatars-private').createSignedUrl(me.id+'/profile.webp',300);if(signed.data?.signedUrl){const img=document.createElement('img');img.src=signed.data.signedUrl;img.alt='Profil fotoğrafım';img.style.cssText='width:84px;height:84px;border-radius:50%;object-fit:cover';holder.replaceChildren(img)}}$('role').textContent=p.role==='teacher'?'Öğretmen paneli':'Öğrenci dersliği';
 $('teacher').classList.toggle('hidden',p.role!=='teacher');$('student').classList.toggle('hidden',p.role!=='student');
+setupDashboardNavigation(p.role==='teacher'?'teacher':'student');
 if(p.role==='teacher')await teacherView();else await studentView()
 }
 $('signin').onclick=async()=>{const {error}=await db.auth.signInWithPassword({email:/^\d{4,8}$/.test($('email').value.trim())?$('email').value.trim()+'@student.3a.invalid':$('email').value.trim(),password:$('password').value});if(error)msg(error.message);else {msg('');await refresh()}};
