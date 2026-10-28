@@ -232,6 +232,8 @@ removeVideo.onclick=()=>{if(!window.confirm('Bu öğrenme çıktısının video 
  document.querySelectorAll('[data-purge-activities]').forEach(b=>b.onclick=()=>{const l=(lessons||[]).find(x=>x.id===b.dataset.purgeActivities);if(l)purgeTrash('activities',l.id,l.title+' etkinlikleri')});
  const {data:students,error:studentError}=await db.from('profiles').select('id,display_name,student_code').eq('role','student').order('display_name');
 const {data:records,error:progressError}=await db.from('progress').select('student_id,activity_id,status,score,updated_at');
+const {data:activityDetails}=await db.from('activities').select('id,lesson_id,prompt');
+const {data:lessonDetails}=await db.from('lessons').select('id,title,subject');
 const {data:testScores}=await db.from('test_scores').select('student_id,score');
 const {data:gameScores}=await db.from('class_game_scores').select('student_id,score');
 const gamePoints={};for(const x of gameScores||[])gamePoints[x.student_id]=(gamePoints[x.student_id]||0)+x.score;
@@ -250,6 +252,12 @@ for(const student of students||[]){
  const select=document.createElement('input');select.type='file';select.accept='image/jpeg,image/png,image/webp';select.setAttribute('aria-label',student.display_name+' için fotoğraf seç');card.append(select);
  const info=document.createElement('p');info.textContent='📖 Anlatım: '+(awarded[student.id]?.narration||0)+' · 🎥 Video: '+(awarded[student.id]?.video||0)+' · 🎮 Etkinlik: '+((byStudent[student.id]?.completed||0)*10)+' · 📝 Test: '+(quizPoints[student.id]||0)+' · 🌉 Oyun: '+(gamePoints[student.id]||0)+' puan';card.append(info);
  const total=document.createElement('p');total.textContent='Toplam: '+((awarded[student.id]?.narration||0)+(awarded[student.id]?.video||0)+(byStudent[student.id]?.completed||0)*10+(quizPoints[student.id]||0)+(gamePoints[student.id]||0))+' puan';card.append(total);
+ const detail=document.createElement('details');
+ const summary=document.createElement('summary');summary.textContent='📋 Tamamlanan etkinlikleri göster';detail.append(summary);
+ const done=(records||[]).filter(x=>x.student_id===student.id&&x.status==='completed');
+ for(const record of done){const activity=(activityDetails||[]).find(x=>x.id===record.activity_id);const lesson=(lessonDetails||[]).find(x=>x.id===activity?.lesson_id);const p=document.createElement('p');p.textContent=(lesson?.subject||'Ders')+' · '+(lesson?.title||'Öğrenme çıktısı')+' · '+(activity?.prompt||'Etkinlik');detail.append(p)}
+ if(!done.length){const p=document.createElement('p');p.textContent='Henüz tamamlanmış etkinlik yok.';detail.append(p)}
+ card.append(detail);
  const message=document.createElement('small');card.append(message);$('studentList').append(card);
  const path=student.id+'/profile.webp';const signed=await db.storage.from('student-avatars-private').createSignedUrl(path,300);
  if(signed.data?.signedUrl){const img=document.createElement('img');img.src=signed.data.signedUrl;img.alt=student.display_name+' profil fotoğrafı';img.style.cssText='width:54px;height:54px;border-radius:50%;object-fit:cover';avatar.replaceChildren(img)}
