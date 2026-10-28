@@ -21,7 +21,10 @@ async function loadGames(){
    if(subject!==gameSubject)continue;
    const p=document.createElement('p');const a=document.createElement('a');a.href='yuvarlama-koprusu.html';a.textContent='🌉 '+game.title+' · Oyunu başlat';p.append(a);fold.append(p);found++;
   }
-  if(!found){const p=document.createElement('p');p.textContent='Bu bölümde henüz yayınlanmış oyun bulunmuyor.';fold.append(p)}
+  const code=({'Türkçe':'turkce','Matematik':'matematik','Fen Bilimleri':'fen','Hayat Bilgisi':'hayat','Klasik Oyunlar':'klasik'})[subject];
+  const names=({'Türkçe':'📚 Eş ve Zıt Anlam Dedektifi','Matematik':'🧮 Çarpım Tablosu Şampiyonu','Fen Bilimleri':'🔬 Canlılar ve Duyular','Hayat Bilgisi':'🌱 Sağlıklı Yaşam Kaşifi','Klasik Oyunlar':'🎲 Karışık Bilgi Yarışması'})[subject];
+  const box=document.createElement('div');box.className='test-card';const link=document.createElement('a');link.href='bilgi-macerasi.html?oyun='+code;link.textContent=names+' · Oyunu başlat';box.append(link);fold.append(box);
+
   root.append(fold);
  }
 }
