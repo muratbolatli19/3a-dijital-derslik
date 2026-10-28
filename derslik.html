@@ -20,10 +20,10 @@ button.danger{background:#b72e55;box-shadow:0 4px 0 #7a1737;color:white}button.d
 </head><body><header><h1>🚀 3/A Dijital Derslik</h1><div>Özel Süleymaniye Okulları Seyrice İlkokulu</div><div>Öğretmen: <strong>Murat Bolatlı</strong></div></header>
 <main class="wrap"><div class="panel"><h3>🪐 Etkileşimli Kesir Görevleri</h3><p>Matematik öğrenme çıktısınına bağlı 5 görsel ve düşünme etkinliği. Öğretmen olarak önizleyebilir, yayınladıktan sonra öğrenci hesaplarıyla tamamlatabilirsiniz.</p><a href="kesir-gorevleri-v2.html"><button>Etkinlikleri aç →</button></a></div>
 <div class="panel" id="auth">
-<h2>Güvenli giriş</h2><p class="muted">Öğretmen ve öğrenciler için merkezi hesap sistemi. Henüz gerçek öğrenci hesapları tanımlanmadı.</p>
-<div class="grid"><div><label>E-posta veya öğrenci kodu</label><input id="email" type="email" autocomplete="email" placeholder="Öğretmen e-postası veya öğrenci kodu"></div><div><label>Şifre</label><input id="password" type="password" autocomplete="current-password" placeholder="Şifre (en az 12 karakter)"></div></div>
-<button id="signin">Giriş yap</button><button id="signup" class="alt">İlk öğretmen hesabımı oluştur</button><button id="reset" class="alt">Şifremi sıfırla</button>
-<p class="notice">Öğretmen hesabı e-posta doğrulaması ve yönetici onayından sonra açılır. Hesap oluşturmanız sizi otomatik olarak öğretmen yetkilisi yapmaz.</p>
+<h2>Güvenli giriş</h2><p class="muted">19 öğrenci ve 1 öğretmen hesabı hazır. Giriş türünü seçip mevcut bilgilerinizle devam edin.</p>
+<div class="row"><button type="button" id="chooseTeacher" class="alt">👨‍🏫 Öğretmen girişi</button><button type="button" id="chooseStudent" class="alt">🚀 Öğrenci girişi</button></div><p id="loginHint" class="muted">Öğretmen e-postanızı veya öğrenci kodunuzu girin.</p><div class="grid"><div><label id="loginLabel">E-posta veya öğrenci kodu</label><input id="email" type="text" autocomplete="username" placeholder="E-posta veya öğrenci kodu"></div><div><label>Şifre</label><input id="password" type="password" autocomplete="current-password" placeholder="Şifre (en az 12 karakter)"></div></div>
+<button id="signin">Giriş yap</button><button id="signup" class="alt hidden">İlk öğretmen hesabımı oluştur</button><button id="reset" class="alt">Şifremi sıfırla</button>
+<p class="notice">Öğrenciler 4–8 rakamlı öğrenci kodu ve kendilerine verilen şifreyle giriş yapar. Öğretmen mevcut e-posta hesabını kullanır.</p>
 </div>
 <div class="panel hidden" id="main">
 <div class="row"><div><h2 id="greeting">Hoş geldiniz</h2><p class="muted" id="role"></p></div><button id="logout" class="alt">Çıkış</button></div>
@@ -133,6 +133,8 @@ $('teacher').classList.toggle('hidden',p.role!=='teacher');$('student').classLis
 setupDashboardNavigation(p.role==='teacher'?'teacher':'student');
 if(p.role==='teacher')await teacherView();else await studentView()
 }
+$('chooseTeacher').onclick=()=>{$('loginLabel').textContent='Öğretmen e-postası';$('email').placeholder='Öğretmen e-postanız';$('loginHint').textContent='Mevcut öğretmen hesabınızla giriş yapın.';$('email').focus()};
+$('chooseStudent').onclick=()=>{$('loginLabel').textContent='Öğrenci giriş kodu';$('email').placeholder='Örn. 3001';$('loginHint').textContent='Öğrenci kodunuzu ve verilen şifrenizi girin.';$('email').focus()};
 $('signin').onclick=async()=>{const {error}=await db.auth.signInWithPassword({email:/^\d{4,8}$/.test($('email').value.trim())?$('email').value.trim()+'@student.3a.invalid':$('email').value.trim(),password:$('password').value});if(error)msg(error.message);else {msg('');await refresh()}};
 $('signup').onclick=async()=>{if($('password').value.length<12){msg('Şifre en az 12 karakter olmalıdır.');return}const {error}=await db.auth.signUp({email:$('email').value.trim(),password:$('password').value});msg(error?error.message:'Hesap isteği alındı. E-posta doğrulamasını yapın; öğretmen yetkisi ayrıca tanımlanmalıdır.')};
 $('reset').onclick=async()=>{const {error}=await db.auth.resetPasswordForEmail($('email').value.trim(),{redirectTo:location.origin+location.pathname});msg(error?error.message:'Sıfırlama e-postası gönderilmesi istendi.')};
