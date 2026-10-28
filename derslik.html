@@ -617,18 +617,31 @@ async function studentView(){
  for(const x of activityResponse.data||[])counts[x.lesson_id]=(counts[x.lesson_id]||0)+1;
  for(const x of videoResponse.data||[])videos[x.lesson_id]=(videos[x.lesson_id]||0)+1;
  const done=new Set((progressResponse.data||[]).map(x=>x.activity_id));
- const latestWeek=(data||[])[0]?.week_start;
+ const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+ const number=name=>Number(parts.find(p=>p.type===name)?.value);
+ const now=new Date(Date.UTC(number('year'),number('month')-1,number('day')));
+ const offset=(now.getUTCDay()+6)%7;now.setUTCDate(now.getUTCDate()-offset);
+ const currentWeek=now.toISOString().slice(0,10);
  const today=$('todayTasksList');today.replaceChildren();
- const latest=(data||[]).filter(x=>x.week_start===latestWeek);
- if(!latest.length)today.textContent='Henüz bu hafta için yayımlanmış ders bulunmuyor.';
- for(const lesson of latest){
+ const weekly=(data||[]).filter(x=>x.week_start===currentWeek);
+ const intro=$('todayTasks')?.querySelector('p');
+ if(intro)intro.textContent='📅 '+currentWeek+' haftası · Yayınlanan dersler ve kişisel görev durumun';
+ if(!weekly.length){
+  const empty=document.createElement('div');empty.className='today-task-card';
+  empty.textContent='🌤️ Bu hafta için henüz ders yayınlanmadı. Önceki çalışmaların Haftalık Derslerim bölümünde duruyor.';
+  today.append(empty);
+ }
+ for(const lesson of weekly){
   const assigned=(activityResponse.data||[]).filter(x=>x.lesson_id===lesson.id);
   const completed=assigned.filter(x=>done.has(x.id)).length;
   const card=document.createElement('div');card.className='today-task-card';
-  const label=document.createElement('strong');label.textContent=lesson.subject+' · '+lesson.title;
-  const status=document.createElement('span');status.textContent=assigned.length?(completed===assigned.length?'✅ Tamamlandı':'🎯 '+completed+'/'+assigned.length+' görev tamamlandı'):'📖 Konu anlatımı hazır';
-  const link=document.createElement('a');link.href='ders-gorevleri.html?lesson='+encodeURIComponent(lesson.id);link.textContent=assigned.length&&completed===assigned.length?'🔁 Dersi tekrar et':'🚀 Göreve git';
-  card.append(label,status,link);today.append(card);
+  const label=document.createElement('strong');label.textContent=({'Türkçe':'📚','Matematik':'🧮','Fen Bilimleri':'🔬','Hayat Bilgisi':'🌱'}[lesson.subject]||'📘')+' '+lesson.subject+' · '+lesson.title;
+  const status=document.createElement('span');
+  status.textContent=progressResponse.error?'⚠️ Tamamlanma bilgisi alınamadı':assigned.length?(completed===assigned.length?'✅ Tüm görevler tamamlandı':'🎯 '+completed+'/'+assigned.length+' etkinlik tamamlandı'):'📖 Konu anlatımı hazır';
+  card.append(label,status);
+  if(assigned.length){const meter=document.createElement('progress');meter.max=assigned.length;meter.value=completed;meter.setAttribute('aria-label',lesson.subject+' görev ilerlemesi');meter.style.width='100%';card.append(meter)}
+  const link=document.createElement('a');link.href='ders-gorevleri.html?lesson='+encodeURIComponent(lesson.id);link.textContent=assigned.length&&completed===assigned.length?'🔁 Tekrar çalış':'🚀 Derse başla';
+  card.append(link);today.append(card);
  }
  const root=$('studentLessons');root.replaceChildren();
  if(!(data||[]).length){const empty=document.createElement('p');empty.className='notice';empty.textContent='Henüz yayınlanmış bir ders yok. Öğretmeniniz ders yayınladığında burada görünecek.';root.append(empty)}
