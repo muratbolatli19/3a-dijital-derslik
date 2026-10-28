@@ -135,9 +135,23 @@ if(p.role==='teacher')await teacherView();else await studentView()
 }
 $('chooseTeacher').onclick=()=>{$('loginLabel').textContent='Öğretmen e-postası';$('email').placeholder='Öğretmen e-postanız';$('loginHint').textContent='Mevcut öğretmen hesabınızla giriş yapın.';$('email').focus()};
 $('chooseStudent').onclick=()=>{$('loginLabel').textContent='Öğrenci giriş kodu';$('email').placeholder='Örn. 3001';$('loginHint').textContent='Öğrenci kodunuzu ve verilen şifrenizi girin.';$('email').focus()};
-$('signin').onclick=async()=>{const {error}=await db.auth.signInWithPassword({email:/^\d{4,8}$/.test($('email').value.trim())?$('email').value.trim()+'@student.3a.invalid':$('email').value.trim(),password:$('password').value});if(error)msg(error.message);else {msg('');await refresh()}};
+$('signin').onclick=async()=>{
+ const identity=$('email').value.trim(),pass=$('password').value;
+ if(!identity||!pass)return msg('Giriş kodunuzu/e-postanızı ve şifrenizi yazın.');
+ const isCode=/^\d{4,8}$/.test(identity);
+ if(!isCode&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identity))return msg('Öğrenci için 4–8 haneli kod, öğretmen için geçerli e-posta yazın.');
+ const button=$('signin');button.disabled=true;msg('Giriş kontrol ediliyor...');
+ try{
+ const email=isCode?identity+'@student.3a.invalid':identity;
+ const {data,error}=await db.auth.signInWithPassword({email,password:pass});
+ if(error){msg('Giriş başarısız. Kod/e-posta ve şifrenizi kontrol edin. Öğrenciyseniz şifrenizi öğretmeninizden isteyin.');return}
+ const {data:p,error:perror}=await db.from('profiles').select('role,active').eq('id',data.user.id).maybeSingle();
+ if(perror||!p?.active||p.role!==(isCode?'student':'teacher')){await db.auth.signOut();msg('Hesap türü veya erişim yetkisi doğrulanamadı. Doğru giriş seçeneğini kullanın.');return}
+ $('password').value='';msg('');await refresh();
+ }catch(e){msg('Bağlantı veya oturum hatası: '+e.message)}finally{button.disabled=false}
+};
 $('signup').onclick=async()=>{if($('password').value.length<12){msg('Şifre en az 12 karakter olmalıdır.');return}const {error}=await db.auth.signUp({email:$('email').value.trim(),password:$('password').value});msg(error?error.message:'Hesap isteği alındı. E-posta doğrulamasını yapın; öğretmen yetkisi ayrıca tanımlanmalıdır.')};
-$('reset').onclick=async()=>{const {error}=await db.auth.resetPasswordForEmail($('email').value.trim(),{redirectTo:location.origin+location.pathname});msg(error?error.message:'Sıfırlama e-postası gönderilmesi istendi.')};
+$('reset').onclick=async()=>{const address=$('email').value.trim();if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(address))return msg('Şifre sıfırlama öğretmen e-postası içindir. Öğrenciler şifre yenileme için öğretmenine başvurmalıdır.');const {error}=await db.auth.resetPasswordForEmail(address,{redirectTo:location.origin+location.pathname});msg(error?error.message:'Sıfırlama e-postası gönderilmesi istendi.')};
 $('logout').onclick=async()=>{await db.auth.signOut();await refresh()};
 $('form').onsubmit=async e=>{e.preventDefault();const obj={author_id:me.id,subject:$('subject').value,week_start:$('week').value,title:$('title').value.trim(),outcome:$('outcome').value.trim(),explanation:$('explanation').value.trim(),video_url:$('video').value.trim()||null,published:false};try{const file=$('videoFile').files[0];if(file)obj.video_url=await uploadLessonVideo(file)}catch(err){msg(err.message);return}const {data:created,error}=await db.from('lessons').insert(obj).select('id').single();if(error){msg(error.message)}else{try{const g=await generateForLesson(created.id);msg('Öğrenme Çıktısı kaydedildi; '+g.created+' etkinlik otomatik oluşturuldu.')}catch(e){msg('Öğrenme Çıktısı kaydedildi ancak etkinlik üretimi başarısız: '+e.message)}e.target.reset();await teacherView()}};
 async function uploadLessonVideo(file){
