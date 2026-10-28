@@ -49,7 +49,7 @@ async function refresh(){const {data:{user}}=await db.auth.getUser();me=user;if(
 $('auth').classList.add('hidden');$('main').classList.remove('hidden');
 const {data:p,error}=await db.from('profiles').select('role,display_name,active').eq('id',me.id).maybeSingle();
 profile=p;if(error||!p||!p.active){$('greeting').textContent='Hesap doğrulama bekliyor';$('role').textContent='E-posta hesabınız oluşturuldu. Öğretmen yetkisi güvenli yönetim ekranından atanmalıdır.';$('teacher').classList.add('hidden');$('student').classList.add('hidden');return}
-$('greeting').textContent='Hoş geldiniz, '+p.display_name;if(p.role==='student'){$('greeting').prepend(rocketAvatar(p.display_name,true));}$('role').textContent=p.role==='teacher'?'Öğretmen paneli':'Öğrenci dersliği';
+$('greeting').textContent='Hoş geldiniz, '+p.display_name;if(p.role==='student'){const holder=rocketAvatar(p.display_name,true);$('greeting').prepend(holder);const signed=await db.storage.from('student-avatars-private').createSignedUrl(me.id+'/profile.webp',300);if(signed.data?.signedUrl){const img=document.createElement('img');img.src=signed.data.signedUrl;img.alt='Profil fotoğrafım';img.style.cssText='width:84px;height:84px;border-radius:50%;object-fit:cover';holder.replaceChildren(img)}}$('role').textContent=p.role==='teacher'?'Öğretmen paneli':'Öğrenci dersliği';
 $('teacher').classList.toggle('hidden',p.role!=='teacher');$('student').classList.toggle('hidden',p.role!=='student');
 if(p.role==='teacher')await teacherView();else await studentView()
 }
@@ -240,8 +240,30 @@ const quizPoints={};for(const t of testScores||[])quizPoints[t.student_id]=(quiz
 const byStudent={};for(const x of records||[]){if(!byStudent[x.student_id])byStudent[x.student_id]={completed:0,attempts:0};byStudent[x.student_id].attempts++;if(x.status==='completed')byStudent[x.student_id].completed++}
 const totalStudents=students?.length||0;const completeStudents=(students||[]).filter(x=>(byStudent[x.id]?.completed||0)>0).length;
 $('progressSummary').innerHTML='<div class="panel"><h3>👩‍🎓 '+totalStudents+'</h3><p>Öğrenci hesabı</p></div><div class="panel"><h3>✅ '+completeStudents+'</h3><p>Etkinliğe başlayan/tamamlayan öğrenci</p></div><div class="panel"><h3>📝 '+(records?.length||0)+'</h3><p>İlerleme kaydı</p></div>';
-const renderRocketCards=()=>{for(const item of $('studentList').children){const title=item.querySelector('b');if(title)item.prepend(rocketAvatar(title.textContent))}};
-$('studentList').innerHTML=students?.length?students.map(x=>'<div class="panel"><b>'+esc(x.display_name)+'</b> · '+esc(x.student_code||'')+'<p>📖 Anlatım: '+(awarded[x.id]?.narration||0)+' puan · 🎥 Video: '+(awarded[x.id]?.video||0)+' puan · 🎮 Ders oyunu: '+((byStudent[x.id]?.completed||0)*10)+' puan · 📝 Test/yarışma: '+(quizPoints[x.id]||0)+' puan</p><p><b>Toplam: '+((awarded[x.id]?.narration||0)+(awarded[x.id]?.video||0)+(byStudent[x.id]?.completed||0)*10+(quizPoints[x.id]||0))+' puan</b></p></div>').join(''):'Henüz öğrenci hesabı yok. Öğrenci kayıtları güvenli yönetim işlemiyle oluşturulmalıdır.';renderRocketCards();
+$('studentList').replaceChildren();
+for(const student of students||[]){
+ const card=document.createElement('div');card.className='panel';
+ const avatar=rocketAvatar(student.display_name);card.append(avatar);
+ const title=document.createElement('strong');title.textContent=' '+student.display_name+' · '+(student.student_code||'');card.append(title);
+ const select=document.createElement('input');select.type='file';select.accept='image/jpeg,image/png,image/webp';select.setAttribute('aria-label',student.display_name+' için fotoğraf seç');card.append(select);
+ const info=document.createElement('p');info.textContent='📖 Anlatım: '+(awarded[student.id]?.narration||0)+' · 🎥 Video: '+(awarded[student.id]?.video||0)+' · 🎮 Etkinlik: '+((byStudent[student.id]?.completed||0)*10)+' · 📝 Test: '+(quizPoints[student.id]||0)+' puan';card.append(info);
+ const total=document.createElement('p');total.textContent='Toplam: '+((awarded[student.id]?.narration||0)+(awarded[student.id]?.video||0)+(byStudent[student.id]?.completed||0)*10+(quizPoints[student.id]||0))+' puan';card.append(total);
+ const message=document.createElement('small');card.append(message);$('studentList').append(card);
+ const path=student.id+'/profile.webp';const signed=await db.storage.from('student-avatars-private').createSignedUrl(path,300);
+ if(signed.data?.signedUrl){const img=document.createElement('img');img.src=signed.data.signedUrl;img.alt=student.display_name+' profil fotoğrafı';img.style.cssText='width:54px;height:54px;border-radius:50%;object-fit:cover';avatar.replaceChildren(img)}
+ select.onchange=async()=>{
+  const file=select.files?.[0];if(!file)return;
+  if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024){message.textContent='PNG/JPG/WebP, en fazla 5 MB seçin.';return}
+  select.disabled=true;message.textContent='Fotoğraf yükleniyor...';
+  try{const bitmap=await createImageBitmap(file);const canvas=document.createElement('canvas');const scale=Math.min(1,512/Math.max(bitmap.width,bitmap.height));canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();
+   const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',.82));if(!blob)throw Error('Görsel işlenemedi');
+   const uploaded=await db.storage.from('student-avatars-private').upload(path,blob,{contentType:'image/webp',upsert:true});if(uploaded.error)throw uploaded.error;
+   const result=await db.storage.from('student-avatars-private').createSignedUrl(path,300);if(result.data?.signedUrl){const img=document.createElement('img');img.src=result.data.signedUrl;img.alt=student.display_name+' profil fotoğrafı';img.style.cssText='width:54px;height:54px;border-radius:50%;object-fit:cover';avatar.replaceChildren(img)}
+   message.textContent='Fotoğraf güvenli alana kaydedildi.';
+  }catch(e){message.textContent='Yükleme hatası: '+e.message}finally{select.disabled=false;select.value=''}
+ };
+}
+if(!(students||[]).length)$('studentList').textContent='Henüz öğrenci hesabı yok.';
 if(studentError||progressError)msg('İlerleme verileri alınırken sorun oluştu: '+(studentError?.message||progressError?.message));
 }
 async function studentView(){
