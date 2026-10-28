@@ -80,7 +80,7 @@ async function showStudentPreview(studentId){
   db.from('test_scores').select('score').eq('student_id',studentId),
   db.from('class_game_scores').select('score').eq('student_id',studentId),
   db.from('progress').select('activity_id,status').eq('student_id',studentId),
-  db.from('lessons').select('title,subject,week_start').eq('published',true).is('deleted_at',null).order('week_start',{ascending:false})
+  db.from('lessons').select('id,title,subject,week_start,explanation,video_url').eq('published',true).is('deleted_at',null).order('week_start',{ascending:false})
  ]);
  root.replaceChildren();const avatar=rocketAvatar(person.display_name,true);root.append(avatar);
  const signed=await db.storage.from('student-avatars-private').createSignedUrl(studentId+'/profile.webp',300);
@@ -90,7 +90,23 @@ async function showStudentPreview(studentId){
  const summary=document.createElement('p');summary.textContent='⭐ Toplam puan: '+points+' · 🎯 Tamamlanan görev: '+(prog.data||[]).filter(x=>x.status==='completed').length;root.append(summary);
  const notice=document.createElement('h3');notice.textContent='📚 Öğrencinin göreceği haftalık dersler';root.append(notice);
  if(!(lessons.data||[]).length){const empty=document.createElement('p');empty.textContent='Henüz yayınlanan ders yok.';root.append(empty)}
- for(const l of lessons.data||[]){const item=document.createElement('div');item.className='panel';item.textContent=l.subject+' · '+l.title+' · '+l.week_start;root.append(item)}
+ for(const l of lessons.data||[]){
+ const item=document.createElement('div');item.className='panel';
+ const title=document.createElement('h4');title.textContent='📚 '+l.subject+' · '+l.title;item.append(title);
+ const date=document.createElement('p');date.textContent='📅 '+l.week_start;item.append(date);
+ const open=document.createElement('button');open.type='button';open.className='alt';open.textContent='👁 Ders ve etkinlikleri incele';
+ const section=document.createElement('div');section.className='hidden';
+ open.onclick=async()=>{
+  section.classList.toggle('hidden');if(section.classList.contains('hidden'))return;
+  section.replaceChildren();const intro=document.createElement('p');intro.textContent=l.explanation||'Konu anlatımı henüz eklenmedi.';section.append(intro);
+  if(l.video_url){const video=document.createElement('p');video.textContent='🎥 Video: ';const link=document.createElement('a');link.href=l.video_url;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Videoyu aç';video.append(link);section.append(video)}
+  const {data:acts,error:actErr}=await db.from('activities').select('prompt').eq('lesson_id',l.id).is('deleted_at',null);
+  if(actErr){const warn=document.createElement('p');warn.textContent='Etkinlikler okunamadı: '+actErr.message;section.append(warn);return}
+  if(!(acts||[]).length){const blank=document.createElement('p');blank.textContent='Bu ders için henüz etkinlik eklenmedi.';section.append(blank)}
+  else for(const a of acts){const p=document.createElement('p');p.textContent='🎯 '+(a.prompt||'Etkinlik');section.append(p)}
+ };
+ item.append(open,section);root.append(item);
+}
  if([a,t,g,prog,lessons].some(x=>x.error)){const err=document.createElement('p');err.textContent='Bazı bilgiler alınamadı. Lütfen erişim kurallarını kontrol edin.';root.append(err)}
 }
 $('openStudentPreview').onclick=async()=>{
