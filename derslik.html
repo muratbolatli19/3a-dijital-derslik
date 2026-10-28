@@ -388,7 +388,7 @@ for(const student of students||[]){
  const title=document.createElement('strong');title.textContent=' '+student.display_name+' · '+(student.student_code||'');card.append(title);
  const select=document.createElement('input');select.type='file';select.accept='image/jpeg,image/png,image/webp';select.setAttribute('aria-label',student.display_name+' için fotoğraf seç');card.append(select);
  const info=document.createElement('p');info.textContent='📖 Anlatım: '+(awarded[student.id]?.narration||0)+' · 🎥 Video: '+(awarded[student.id]?.video||0)+' · 🎮 Etkinlik: '+((byStudent[student.id]?.completed||0)*10)+' · 📝 Test: '+(quizPoints[student.id]||0)+' · 🌉 Oyun: '+(gamePoints[student.id]||0)+' puan';card.append(info);
- const total=document.createElement('p');total.textContent='Toplam: '+((awarded[student.id]?.narration||0)+(awarded[student.id]?.video||0)+(byStudent[student.id]?.completed||0)*10+(quizPoints[student.id]||0)+(gamePoints[student.id]||0))+' puan';card.append(total);
+ const total=document.createElement('p');const awardTotal=Object.values(awarded[student.id]||{}).reduce((n,x)=>n+Number(x||0),0);total.textContent='⭐ Ortak toplam: '+(awardTotal+(byStudent[student.id]?.completed||0)*10+(quizPoints[student.id]||0)+(gamePoints[student.id]||0))+' puan';card.append(total);
  const detail=document.createElement('details');
  const summary=document.createElement('summary');summary.textContent='📋 Tamamlanan etkinlikleri göster';detail.append(summary);
  const done=(records||[]).filter(x=>x.student_id===student.id&&x.status==='completed');
@@ -428,11 +428,13 @@ async function renderStudentProfile(){
  const video=(a.data||[]).filter(x=>x.kind==='video').reduce((n,x)=>n+x.points,0);
  const narration=(a.data||[]).filter(x=>x.kind==='narration').reduce((n,x)=>n+x.points,0);
  const tasks=(p.data||[]).length*10;
- const total=test+games+video+narration+tasks;
+ const otherAwards=(a.data||[]).filter(x=>!['video','narration'].includes(x.kind)).reduce((n,x)=>n+x.points,0);
+ const computedTotal=test+games+video+narration+otherAwards+tasks;
+ const total=myRank?Number(myRank.points):computedTotal;
  const intro=document.createElement('p');intro.textContent='Merhaba '+profile.display_name+'! Uzay yolculuğuna hoş geldin.';box.append(intro);
  const stats=[['⭐ Toplam puan',total],['🏆 Sınıftaki sıram',myRank?myRank.rank+'. sıra':'Henüz hesaplanamadı'],['🎯 Tamamladığım görevler',(p.data||[]).length]];
  for(const [label,value] of stats){const line=document.createElement('p');const bold=document.createElement('strong');bold.textContent=label+': ';line.append(bold,document.createTextNode(String(value)));box.append(line)}
- const breakdown=document.createElement('p');breakdown.textContent='📖 Anlatım '+narration+' · 🎥 Video '+video+' · 🎯 Etkinlik '+tasks+' · 📝 Test '+test+' · 🎮 Oyun '+games+' puan';box.append(breakdown);
+ const breakdown=document.createElement('p');breakdown.textContent='📖 Anlatım '+narration+' · 🎥 Video '+video+' · 🎯 Etkinlik '+tasks+' · 📝 Test '+test+' · 🎮 Oyun '+games+' · ✨ Diğer ödüller '+otherAwards+' puan';box.append(breakdown);
  const open=document.createElement('a');open.href='oyun-test-merkezi.html';open.textContent='🏆 İsimsiz Yıldız Ligi tablosunu aç';box.append(open);
  if(sources.some(x=>x.error)){const w=document.createElement('p');w.textContent='Bazı puan kayıtları alınamadı; gösterilen toplam eksik olabilir.';box.append(w)}
 }
