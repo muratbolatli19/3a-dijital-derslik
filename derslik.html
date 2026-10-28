@@ -385,7 +385,7 @@ for(const student of students||[]){
  card.append(detail);
  const message=document.createElement('small');card.append(message);$('studentList').append(card);
  const path=student.id+'/profile.webp';const signed=await db.storage.from('student-avatars-private').createSignedUrl(path,300);
- if(signed.data?.signedUrl){const img=document.createElement('img');img.src=signed.data.signedUrl;img.alt=student.display_name+' profil fotoğrafı';img.style.cssText='width:54px;height:54px;border-radius:50%;object-fit:cover';avatar.replaceChildren(img)}
+ if(signed.data?.signedUrl){const img=document.createElement('img');img.src=signed.data.signedUrl;img.onerror=()=>{message.textContent='Fotoğraf açılamadı; öğretmen yeniden yükleyebilir.'};img.onload=()=>{message.textContent='✅ Fotoğraf yüklendi'};img.alt=student.display_name+' profil fotoğrafı';img.style.cssText='width:54px;height:54px;border-radius:50%;object-fit:cover';avatar.replaceChildren(img)}
  select.onchange=async()=>{
   const file=select.files?.[0];if(!file)return;
   if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024){message.textContent='PNG/JPG/WebP, en fazla 5 MB seçin.';return}
