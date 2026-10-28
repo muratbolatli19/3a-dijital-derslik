@@ -155,6 +155,8 @@ async function reward(action,kind,part_key='lesson'){
  const result=await response.json();if(!response.ok)throw Error(result.error||'Kayıt başarısız');if(result.points>0)$('status').textContent='🌟 +'+result.points+' ders dinleme/izleme puanı kazandın!';return result;
 }
 
+const {data:completedVideos}=profile.role==='student'?await db.from('learning_awards').select('part_key,points').eq('student_id',me.id).eq('lesson_id',found.id).eq('kind','video'): {data:[]};
+const completedParts=new Set((completedVideos||[]).filter(x=>Number(x.points)>0).map(x=>String(x.part_key)));
 const {data:chapters}=await db.from('lesson_video_parts').select('id,part_number,title,video_url').eq('lesson_id',found.id).order('part_number');
 if(chapters?.length){
  const host=$('videoChapters');host.innerHTML='<h3>🎬 Bölümlü konu anlatımı</h3><p>Önce bölümleri sırayla izleyin, sonra etkinlikleri açın.</p>';
@@ -168,11 +170,11 @@ if(chapters?.length){
  navigation.append(next);
  if(i>0){const prev=document.createElement('button');prev.type='button';prev.className='outline';prev.textContent='← Önceki Bölüm';prev.onclick=()=>playPart(i-1);navigation.prepend(prev)}
  player.append(navigation);
- const playbackStatus=document.createElement('p');playbackStatus.className='muted';playbackStatus.textContent='⏳ Video henüz tamamlanmadı.';player.append(playbackStatus);
- if(media.tagName==='VIDEO')media.addEventListener('ended',async()=>{try{await reward('complete','video',part.id);playbackStatus.textContent='✅ Bölüm izlendi ve tamamlanma kaydı gönderildi.'}catch(e){playbackStatus.textContent='⚠️ İzleme kaydı oluşturulamadı: '+e.message}next.focus()});
- else{const manual=document.createElement('button');manual.type='button';manual.className='outline';manual.textContent='✅ Videoyu izledim, tamamlandı olarak işaretle';manual.onclick=async()=>{manual.disabled=true;try{await reward('complete','video',part.id);playbackStatus.textContent='✅ İzlediğinizi bildirdiniz.'}catch(e){playbackStatus.textContent='⚠️ Kayıt başarısız: '+e.message;manual.disabled=false}};player.append(manual);playbackStatus.textContent='YouTube videolarında izleme sonu otomatik doğrulanamaz. İzleyince düğmeye basın.'}
+ const playbackStatus=document.createElement('p');playbackStatus.className='muted';playbackStatus.textContent=completedParts.has(String(part.id))?'✅ Daha önce tamamlandı.':'⏳ Video henüz tamamlanmadı.';player.append(playbackStatus);
+ if(media.tagName==='VIDEO')media.addEventListener('ended',async()=>{try{await reward('complete','video',part.id);completedParts.add(String(part.id));playbackStatus.textContent='✅ Bölüm izlendi ve tamamlanma kaydı gönderildi.'}catch(e){playbackStatus.textContent='⚠️ İzleme kaydı oluşturulamadı: '+e.message}next.focus()});
+ else{const manual=document.createElement('button');manual.type='button';manual.className='outline';manual.textContent='✅ Videoyu izledim, tamamlandı olarak işaretle';manual.onclick=async()=>{manual.disabled=true;try{await reward('complete','video',part.id);completedParts.add(String(part.id));playbackStatus.textContent='✅ İzlediğinizi bildirdiniz.'}catch(e){playbackStatus.textContent='⚠️ Kayıt başarısız: '+e.message;manual.disabled=false}};player.append(manual);playbackStatus.textContent='YouTube videolarında izleme sonu otomatik doğrulanamaz. İzleyince düğmeye basın.'}
 }
- chapters.forEach((p,i)=>{const b=document.createElement('button');b.type='button';b.textContent=p.part_number+'. Bölüm';b.onclick=()=>playPart(i);buttons.append(b)});playPart(0);
+ chapters.forEach((p,i)=>{const b=document.createElement('button');b.type='button';b.textContent=(completedParts.has(String(p.id))?'✅ ':'🎬 ')+p.part_number+'. Bölüm';b.onclick=()=>playPart(i);buttons.append(b)});playPart(0);
 }
 
 $('introTitle').textContent=found.subject+' · '+found.title;
@@ -181,7 +183,7 @@ if(found.video_url){
  wrap.className='panel';const heading=document.createElement('h3');heading.textContent='🎥 Konu anlatımı videosu';wrap.append(heading);
  let videoId=null;
  try{const u=new URL(url);if(u.hostname==='youtu.be')videoId=u.pathname.slice(1);else if(u.hostname.endsWith('youtube.com'))videoId=u.searchParams.get('v')||u.pathname.split('/').pop();
- if(videoId&&videoId.length===11){const player=document.createElement('iframe');player.src='https://www.youtube-nocookie.com/embed/'+encodeURIComponent(videoId);player.title='Konu anlatımı';player.allowFullscreen=true;player.allow='autoplay; encrypted-media; picture-in-picture';player.style.cssText='width:100%;aspect-ratio:16/9;border:0;border-radius:14px';wrap.append(player);const confirm=document.createElement('button');confirm.type='button';confirm.className='outline';confirm.textContent='✅ Ana videoyu izledim';confirm.onclick=async()=>{confirm.disabled=true;try{await reward('complete','video','main');$('status').textContent='✅ Ana video izleme bildirimin kaydedildi.'}catch(e){$('status').textContent='Video tamamlama kaydı başarısız: '+e.message;confirm.disabled=false}};wrap.append(confirm)}
+ if(videoId&&videoId.length===11){const player=document.createElement('iframe');player.src='https://www.youtube-nocookie.com/embed/'+encodeURIComponent(videoId);player.title='Konu anlatımı';player.allowFullscreen=true;player.allow='autoplay; encrypted-media; picture-in-picture';player.style.cssText='width:100%;aspect-ratio:16/9;border:0;border-radius:14px';wrap.append(player);const confirm=document.createElement('button');confirm.type='button';confirm.className='outline';confirm.textContent=completedParts.has('main')?'✅ Ana video tamamlandı':'✅ Ana videoyu izledim';if(completedParts.has('main'))confirm.disabled=true;confirm.onclick=async()=>{confirm.disabled=true;try{await reward('complete','video','main');completedParts.add('main');confirm.textContent='✅ Ana video tamamlandı';$('status').textContent='✅ Ana video izleme bildirimin kaydedildi.'}catch(e){$('status').textContent='Video tamamlama kaydı başarısız: '+e.message;confirm.disabled=false}};wrap.append(confirm)}
  else if(u.protocol==='https:'){const player=document.createElement('video');player.controls=true;player.playsInline=true;player.preload='metadata';player.src=u.href;player.style.cssText='width:100%;max-height:430px;border-radius:14px';wrap.append(player);player.addEventListener('play',()=>reward('start','video','main').catch(()=>{}));player.addEventListener('ended',()=>reward('complete','video','main').catch(e=>{$('status').textContent=e.message}))}
  box.append(wrap);
  }catch(e){console.warn('Geçersiz video bağlantısı')}
