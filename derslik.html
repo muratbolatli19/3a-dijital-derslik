@@ -35,7 +35,7 @@ button.danger{background:#b72e55;box-shadow:0 4px 0 #7a1737;color:white}button.d
 <button type="submit">Taslak dersi kaydet</button></form><p class="muted">Dersler başlangıçta taslak kalır. Yayınlamak için aşağıdaki listeden Yayınla seçin.</p></div>
 <div class="panel"><h3>Ders yönetimi</h3><div class="panel"><h3>🎬 Bölümlü Video Yönetimi</h3><p>Her video bölümünü ayrı ayrı yükleyin (en fazla 50 MB). Öğrenci sırayla izleyebilir.</p><label>Öğrenme çıktısı</label><select id="partLesson"></select><label>Bölüm numarası</label><input id="partNumber" type="number" min="1" max="100" value="1"><label>Bölüm adı</label><input id="partTitle" placeholder="1. Bölüm - Giriş"><label>Video bağlantısı (YouTube veya MP4)</label><input id="partUrl" type="url" placeholder="https://..."><label>Veya video dosyası</label><input id="partFile" type="file" accept="video/mp4,video/webm"><button id="partSave" type="button">💾 Bölümü ekle</button><p id="partStatus" aria-live="polite"></p><div id="partList"></div></div><div id="teacherLessons"></div><div class="panel" style="background:#fff9ef;border:2px solid #f3dbac"><h3>🗑️ Çöp Kutusu · Geri Yükle</h3><p class="muted">Silinen öğrenme çıktıları ve etkinlikler kalıcı olarak yok edilmez. Öğrenci ilerlemeleri saklanır.</p><div id="trashLessons"></div><div id="trashActivities"></div></div></div>
 <div class="panel"><h3>📊 Öğrenci hesapları ve ilerleme</h3><div class="panel"><h4>👤 Yeni öğrenci hesabı oluştur</h4><p class="muted">Sadece öğretmen yetkisiyle çalışır. Öğrenci kodu 4–8 rakam, ilk şifre en az 12 karakter olmalıdır.</p><div class="grid"><div><label>Öğrenci adı soyadı</label><input id="newStudentName" autocomplete="off" placeholder="Öğrenci adı soyadı"></div><div><label>Öğrenci kodu</label><input id="newStudentCode" autocomplete="off" inputmode="numeric" placeholder="1001"></div><div><label>İlk şifre</label><input id="newStudentPassword" type="password" autocomplete="new-password" placeholder="En az 12 karakter"></div></div><button id="createStudent" type="button">Öğrenci hesabını güvenli oluştur</button><p id="studentActionMessage" aria-live="polite"></p></div><div class="panel"><h4>👥 Toplu öğrenci hesabı hazırlama</h4><p class="muted">Öğrenci adlarını her satıra bir kişi gelecek şekilde yapıştırın. Kodları ve güçlü ilk şifreleri yalnızca bu cihazda oluşturulur. Listeyi kontrol edip onaylayınca hesaplar sunucuda açılır. Giriş bilgileri yalnızca sizin indireceğiniz CSV dosyasında tutulur.</p><button id="loadClassRoster" type="button" class="alt">🚀 Hazır 3/A öğrenci listesini getir (19 kişi)</button><textarea id="bulkStudentNames" rows="8" placeholder="Öğrenci Adı Soyadı&#10;Diğer Öğrenci Adı Soyadı"></textarea><button id="bulkPreview" type="button" class="alt">19 kişilik listeyi hazırla</button><div id="bulkPreviewList"></div><button id="bulkCreate" type="button" disabled>Onaylı listedeki hesapları oluştur</button><button id="bulkDownload" type="button" class="alt" disabled>Giriş bilgilerini CSV indir</button><p id="bulkStatus" aria-live="polite"></p></div><div id="progressSummary" class="grid"></div><div id="progressDetails"></div><p>Gerçek öğrenci profilleri yalnızca yetkili yönetim işleminden sonra oluşturulacaktır. Öğrenci şifrelerini GitHub koduna yazmayın.</p><div class="panel"><h4>🚀 19 Fotoğrafı Toplu Yükle</h4><p>Tek tek fotoğraf seçmeden, hazırlanan ZIP dosyasıyla 19 öğrenciye eşleştirin.</p><a href="fotograf-eslestir.html">Fotoğraf eşleştirme ekranını aç</a></div><div class="panel"><h4>🚀 Roketli Fotoğrafları Toplu Yükle</h4><p>19 fotoğraflık ZIP dosyasını seçin. Fotoğraflar isimlere göre eşleştirilir.</p><input id="rocketZip" type="file" accept=".zip"><button id="rocketUpload" type="button">Fotoğrafları eşleştir</button><p id="rocketMessage"></p></div><div id="studentList"></div></div></div>
-<div id="student" class="hidden"><div class="panel"><a href="oyun-test-merkezi.html"><button type="button">🎮 Online Testlerim ve Yıldız Ligi</button></a></div><h3>Haftalık derslerim</h3><div id="studentLessons"></div></div>
+<div id="student" class="hidden"><div class="panel"><a href="oyun-test-merkezi.html"><button type="button">🎮 Online Testlerim ve Yıldız Ligi</button></a></div><div class="panel"><h3>🚀 Benim Uzay Profilim</h3><div id="studentProfileSummary" aria-live="polite">Profil yükleniyor...</div></div><h3>Haftalık derslerim</h3><div id="studentLessons"></div></div>
 </div><p id="status" role="status" aria-live="polite"></p>
 </main><footer>Hazırlayan: Murat Bolatlı · 3/A Dijital Derslik · Ücretsiz sürüm</footer>
 <script type="module">
@@ -266,7 +266,31 @@ for(const student of students||[]){
 if(!(students||[]).length)$('studentList').textContent='Henüz öğrenci hesabı yok.';
 if(studentError||progressError)msg('İlerleme verileri alınırken sorun oluştu: '+(studentError?.message||progressError?.message));
 }
+async function renderStudentProfile(){
+ const box=$('studentProfileSummary');box.replaceChildren();
+ const sources=await Promise.all([
+  db.rpc('anonymous_test_leaderboard'),
+  db.from('test_scores').select('score').eq('student_id',me.id),
+  db.from('class_game_scores').select('score').eq('student_id',me.id),
+  db.from('learning_awards').select('points,kind').eq('student_id',me.id),
+  db.from('progress').select('activity_id,status').eq('student_id',me.id).eq('status','completed')
+ ]);
+ const [r,t,g,a,p]=sources;
+ const myRank=(r.data||[]).find(x=>x.is_me);
+ const test=(t.data||[]).reduce((n,x)=>n+x.score,0),games=(g.data||[]).reduce((n,x)=>n+x.score,0);
+ const video=(a.data||[]).filter(x=>x.kind==='video').reduce((n,x)=>n+x.points,0);
+ const narration=(a.data||[]).filter(x=>x.kind==='narration').reduce((n,x)=>n+x.points,0);
+ const tasks=(p.data||[]).length*10;
+ const total=test+games+video+narration+tasks;
+ const intro=document.createElement('p');intro.textContent='Merhaba '+profile.display_name+'! Uzay yolculuğuna hoş geldin.';box.append(intro);
+ const stats=[['⭐ Toplam puan',total],['🏆 Sınıftaki sıram',myRank?myRank.rank+'. sıra':'Henüz hesaplanamadı'],['🎯 Tamamladığım görevler',(p.data||[]).length]];
+ for(const [label,value] of stats){const line=document.createElement('p');const bold=document.createElement('strong');bold.textContent=label+': ';line.append(bold,document.createTextNode(String(value)));box.append(line)}
+ const breakdown=document.createElement('p');breakdown.textContent='📖 Anlatım '+narration+' · 🎥 Video '+video+' · 🎯 Etkinlik '+tasks+' · 📝 Test '+test+' · 🎮 Oyun '+games+' puan';box.append(breakdown);
+ const open=document.createElement('a');open.href='oyun-test-merkezi.html';open.textContent='🏆 İsimsiz Yıldız Ligi tablosunu aç';box.append(open);
+ if(sources.some(x=>x.error)){const w=document.createElement('p');w.textContent='Bazı puan kayıtları alınamadı; gösterilen toplam eksik olabilir.';box.append(w)}
+}
 async function studentView(){
+await renderStudentProfile();
 const {data,error}=await db.from('lessons').select('id,title,subject,explanation,week_start,video_url').eq('published',true).is('deleted_at',null).order('week_start',{ascending:false});
 if(error){msg(error.message);return}
 const {data:activities, error:actError}=await db.from('activities').select('lesson_id').is('deleted_at',null);
