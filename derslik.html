@@ -295,6 +295,27 @@ $('createStudent').onclick=async()=>{
 const official3ARoster=["HÜMEYRA OKUR","MİRA ÖZTÜRK","AHMET EMİR AYDIN","ABDURRAHMAN HAMZA ÇETİN","ELİF KARAHAN","EYMEN EROL","FERHAT ENVER ÜSTÜNDAĞ","FERİHA ÖZAT","GÖRKEM ENES PEKTANE","HALİL İBRAHİM ÇALIŞICI","İBRAHİM KEREM ERCAN","KÜRŞAD HAMZA YILMAZBAŞ","NECATİ ARAS KIZILARSLAN","ŞERİFE GÜLŞADE ÇELİK","SARE KESKİN","ÖMER YİĞİT KAYA","ÖMER ASAF KESKİN","AHMET SELİM EKİCİ","AMİNE BERRA İNCETEKİN"];
 $('loadClassRoster').onclick=()=>{$('bulkStudentNames').value=official3ARoster.join('\n');$('bulkStudentNames').dispatchEvent(new Event('input'));$('bulkStatus').textContent='19 öğrencinin isimleri hazır. Listeyi inceleyip “19 kişilik listeyi hazırla” düğmesine basın.'};
 function rocketAvatar(name,large=false){const holder=document.createElement('span');holder.className='rocket-avatar';holder.style.cssText='display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(135deg,#1d367f,#6f50bc);border:3px solid #fff;box-shadow:0 3px 9px #2235;width:'+(large?'84px':'54px')+';height:'+(large?'84px':'54px')+';font-size:'+(large?'39px':'28px')+';flex-shrink:0';holder.textContent='🚀';holder.setAttribute('role','img');holder.setAttribute('aria-label',name+' için uzay temalı profil simgesi');return holder}
+$('rocketUpload').onclick=async()=>{
+ const f=$('rocketZip').files?.[0];if(!f)return $('rocketMessage').textContent='Önce ZIP dosyasını seçin.';
+ const b=$('rocketUpload');b.disabled=true;
+ try{
+  const {default:JSZip}=await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm');
+  const zip=await JSZip.loadAsync(f);
+  const {data:students,error}=await db.from('profiles').select('id,display_name').eq('role','student');
+  if(error)throw error;
+  const norm=n=>String(n).toLocaleUpperCase('tr-TR').replace(/\s+/g,' ').trim();
+  const byName=new Map((students||[]).map(x=>[norm(x.display_name),x]));
+  const items=official3ARoster.map((name,i)=>({name,student:byName.get(norm(name)),file:zip.file((3001+i)+'.webp')}));
+  const missing=items.filter(x=>!x.student||!x.file);if(missing.length)throw Error('Eşleşmeyen öğrenciler: '+missing.map(x=>x.name).join(', '));
+  if(!confirm('19 öğrenciye roketli fotoğraflar özel depolama alanında eşleştirilsin mi?'))return;
+  let count=0;for(const item of items){const blob=new Blob([await item.file.async('uint8array')],{type:'image/webp'});
+    const {error:e}=await db.storage.from('student-avatars-private').upload(item.student.id+'/profile.webp',blob,{contentType:'image/webp',upsert:true});
+    if(e)throw Error(item.name+': '+e.message);
+    $('rocketMessage').textContent=(++count)+'/19 fotoğraf yüklendi.';
+  }
+  $('rocketMessage').textContent='19 fotoğraf eşleştirildi. Profil kartları yenileniyor.';await teacherView();
+ }catch(e){$('rocketMessage').textContent=e.message}finally{b.disabled=false}
+};
 let preparedStudents=[];
 function randomFirstPassword(){const bytes=crypto.getRandomValues(new Uint8Array(18));return Array.from(bytes,b=>'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'[b%57]).join('')}
 function getBulkLines(){return $('bulkStudentNames').value.split(/\r?\n/).map(x=>x.trim().replace(/\s+/g,' ')).filter(Boolean)}
