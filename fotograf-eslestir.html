@@ -1,0 +1,19 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>3/A Roket Fotoğrafları</title><style>body{font:16px system-ui;background:#eff4ff;color:#172e53;max-width:790px;margin:25px auto;padding:16px}main{background:white;padding:24px;border-radius:20px}button{background:#4b55bb;color:white;border:0;border-radius:12px;padding:13px;cursor:pointer}button:disabled{opacity:.5}li{padding:6px}a{color:#3854a7}</style></head><body><main><h1>🚀 3/A Fotoğraf Eşleştirme</h1><p>Öğretmen hesabınızla giriş yapın. Hazırlanan 19 fotoğraflık ZIP dosyasını seçin. Öğrenci hesaplarının adlarıyla eşleştirilir; fotoğraflar özel depoya yüklenir.</p><p><a href="derslik.html">← Öğretmen paneline dön</a></p><p id="status">Öğretmen oturumu kontrol ediliyor...</p><input id="zip" type="file" accept=".zip,application/zip"><button id="go" disabled>19 fotoğrafı eşleştir ve yükle</button><ol id="results"></ol></main><script type="module">
+import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/+esm';
+import JSZip from'https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm';
+const db=createClient('https://zhmkyfouskthqgrhvhqp.supabase.co','sb_publishable_YcqB4BO9knYzHk4KKLye3A_ilBb6I9u');
+const names=["HÜMEYRA OKUR","MİRA ÖZTÜRK","AHMET EMİR AYDIN","ABDURRAHMAN HAMZA ÇETİN","ELİF KARAHAN","EYMEN EROL","FERHAT ENVER ÜSTÜNDAĞ","FERİHA ÖZAT","GÖRKEM ENES PEKTANE","HALİL İBRAHİM ÇALIŞICI","İBRAHİM KEREM ERCAN","KÜRŞAD HAMZA YILMAZBAŞ","NECATİ ARAS KIZILARSLAN","ŞERİFE GÜLŞADE ÇELİK","SARE KESKİN","ÖMER YİĞİT KAYA","ÖMER ASAF KESKİN","AHMET SELİM EKİCİ","AMİNE BERRA İNCETEKİN"];
+const $=id=>document.getElementById(id),norm=s=>String(s).toLocaleUpperCase('tr-TR').replace(/\s+/g,' ').trim();let teacher=false;
+async function init(){const{data:{user}}=await db.auth.getUser();if(!user){$('status').textContent='Önce öğretmen panelinden giriş yapın.';return}const{data:p}=await db.from('profiles').select('role,active').eq('id',user.id).single();teacher=p?.role==='teacher'&&p.active;if(!teacher){$('status').textContent='Bu sayfa sadece öğretmen içindir.';return}$('status').textContent='Öğretmen girişi doğrulandı. ZIP dosyasını seçin.';$('go').disabled=false}init();
+$('go').onclick=async()=>{if(!teacher)return;const file=$('zip').files?.[0];if(!file){$('status').textContent='ZIP dosyasını seçin.';return}
+const btn=$('go');btn.disabled=true;
+try{const zip=await JSZip.loadAsync(file);const{data:students,error}=await db.from('profiles').select('id,display_name').eq('role','student');if(error)throw error;
+const lookup=new Map((students||[]).map(x=>[norm(x.display_name),x]));
+const items=names.map((name,i)=>({name,student:lookup.get(norm(name)),entry:zip.file(String(3001+i)+'.webp')}));
+const missing=items.filter(x=>!x.student||!x.entry);if(missing.length)throw Error('Eksik eşleşme: '+missing.map(x=>x.name).join(', '));
+if(!confirm('19 fotoğrafı mevcut öğrenci hesaplarına yüklemeyi onaylıyor musunuz?'))return;
+let done=0;$('results').replaceChildren();for(const item of items){const bytes=await item.entry.async('uint8array');const blob=new Blob([bytes],{type:'image/webp'});
+const path=item.student.id+'/profile.webp';const{error:uploadError}=await db.storage.from('student-avatars-private').upload(path,blob,{contentType:'image/webp',upsert:true});const li=document.createElement('li');li.textContent=item.name+' — '+(uploadError?'Hata: '+uploadError.message:'✓ Yüklendi');$('results').append(li);if(!uploadError)done++;$('status').textContent=done+'/19 fotoğraf aktarıldı.'}
+if(done===19)$('status').textContent='19 fotoğraf başarıyla yüklendi! Öğretmen panelini yenileyin.';
+}catch(e){$('status').textContent='Aktarım hatası: '+e.message}finally{btn.disabled=false}};
+</script></body></html>
