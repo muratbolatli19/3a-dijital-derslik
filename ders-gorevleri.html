@@ -131,12 +131,14 @@ if(chapters?.length){
  let media;if(id&&/^[A-Za-z0-9_-]{11}$/.test(id)){media=document.createElement('iframe');media.src='https://www.youtube-nocookie.com/embed/'+id;media.title=part.title;media.allowFullscreen=true;media.allow='encrypted-media; picture-in-picture'}else{media=document.createElement('video');media.src=u.href;media.controls=true;media.playsInline=true;media.preload='metadata'}
  media.style.cssText='width:100%;aspect-ratio:16/9;border:0;border-radius:16px;background:#172746';const heading=document.createElement('h4');heading.textContent=part.part_number+'. Bölüm · '+part.title;player.append(heading,media);
  const navigation=document.createElement('div');navigation.style.cssText='display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0';
- const next=document.createElement('button');next.type='button';next.textContent=i<chapters.length-1?'▶ Sonraki Bölüme Geç ('+chapters[i+1].part_number+'. Bölüm)':'✅ Son Bölüm Tamamlandı · Etkinliklere Geç';
+ const next=document.createElement('button');next.type='button';next.textContent=i<chapters.length-1?'▶ Sonraki Bölüme Geç ('+chapters[i+1].part_number+'. Bölüm)':'🎯 Etkinliklere Geç';
  next.onclick=()=>{if(i<chapters.length-1){playPart(i+1);host.scrollIntoView({behavior:'smooth',block:'start'})}else{$('introGo').click()}};
  navigation.append(next);
  if(i>0){const prev=document.createElement('button');prev.type='button';prev.className='outline';prev.textContent='← Önceki Bölüm';prev.onclick=()=>playPart(i-1);navigation.prepend(prev)}
  player.append(navigation);
- if(media.tagName==='VIDEO')media.addEventListener('ended',()=>{reward('complete','video',part.id).catch(e=>{$('status').textContent=e.message});next.textContent=i<chapters.length-1?'✅ Video tamamlandı · Sonraki Bölüme Geç':'✅ Video tamamlandı · Etkinliklere Geç';next.focus()});
+ const playbackStatus=document.createElement('p');playbackStatus.className='muted';playbackStatus.textContent='⏳ Video henüz tamamlanmadı.';player.append(playbackStatus);
+ if(media.tagName==='VIDEO')media.addEventListener('ended',async()=>{try{await reward('complete','video',part.id);playbackStatus.textContent='✅ Bölüm izlendi ve tamamlanma kaydı gönderildi.'}catch(e){playbackStatus.textContent='⚠️ İzleme kaydı oluşturulamadı: '+e.message}next.focus()});
+ else{const manual=document.createElement('button');manual.type='button';manual.className='outline';manual.textContent='✅ Videoyu izledim, tamamlandı olarak işaretle';manual.onclick=async()=>{manual.disabled=true;try{await reward('complete','video',part.id);playbackStatus.textContent='✅ İzlediğinizi bildirdiniz.'}catch(e){playbackStatus.textContent='⚠️ Kayıt başarısız: '+e.message;manual.disabled=false}};player.append(manual);playbackStatus.textContent='YouTube videolarında izleme sonu otomatik doğrulanamaz. İzleyince düğmeye basın.'}
 }
  chapters.forEach((p,i)=>{const b=document.createElement('button');b.type='button';b.textContent=p.part_number+'. Bölüm';b.onclick=()=>playPart(i);buttons.append(b)});playPart(0);
 }
