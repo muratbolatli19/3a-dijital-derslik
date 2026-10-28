@@ -354,6 +354,15 @@ async function manageOnlineTests(){
  const {data,error}=await db.from('online_tests').select('id,title,subject,published,questions,mode').order('created_at',{ascending:false});
  if(error){$('testMessage').textContent=error.message;return}
  $('manageTests').innerHTML=(data||[]).filter(t=>t.mode!=='game').map(t=>'<div class="panel"><b>'+esc(t.subject)+' · '+esc(t.title)+'</b><p>'+(t.questions||[]).length+' soru · '+(t.published?'Yayında':'Taslak')+'</p><button type="button" data-test-publish="'+esc(t.id)+'" data-status="'+(!t.published)+'">'+(t.published?'Yayından kaldır':'Yayınla')+'</button></div>').join('')||'Henüz test yok.';
+ const testSubjects=['Türkçe','Matematik','Fen Bilimleri','Hayat Bilgisi'];
+ const testHost=$('manageTests');
+ const testCards=Array.from(testHost.querySelectorAll(':scope > .panel'));
+ for(const subject of testSubjects){
+  const group=document.createElement('details');group.className='teacher-section';
+  const title=document.createElement('summary');title.textContent='📝 '+subject+' · '+testCards.filter(c=>c.querySelector('b')?.textContent?.startsWith(subject+' · ')).length+' test';group.append(title);
+  for(const card of testCards)if(card.querySelector('b')?.textContent?.startsWith(subject+' · '))group.append(card);
+  testHost.append(group);
+ }
  document.querySelectorAll('[data-test-publish]').forEach(b=>b.onclick=async()=>{const{error}=await db.from('online_tests').update({published:b.dataset.status==='true'}).eq('id',b.dataset.testPublish);$('testMessage').textContent=error?error.message:'Test durumu güncellendi.';if(!error)manageOnlineTests()});
 }
 $('saveOnlineTest').onclick=async()=>{
@@ -372,10 +381,18 @@ async function manageReadyGames(){
  if(error){$('readyGames').textContent=error.message;return}
  $('readyGames').replaceChildren();
  for(const game of data||[]){
-  const div=document.createElement('div');div.className='panel';const title=document.createElement('strong');title.textContent=game.title+' · '+(game.published?'Yayında':'Taslak');div.append(title);
+  const div=document.createElement('div');div.className='panel';const title=document.createElement('strong');title.textContent=game.title+' · '+(game.published?'Yayında':'Taslak');div.append(title); const subject=document.createElement('small');subject.textContent=' · Matematik';div.append(subject);
   const test=document.createElement('a');test.href='yuvarlama-koprusu.html?preview=1';test.target='_blank';test.rel='noopener noreferrer';test.textContent=' 👁 Önizle ';div.append(test);
   const b=document.createElement('button');b.type='button';b.textContent=game.published?'Yayından kaldır':'Öğrencilere yayınla';
   b.onclick=async()=>{if(!window.confirm('Oyun yayın durumu değiştirilsin mi?'))return;const {error}=await db.from('class_games').update({published:!game.published}).eq('id',game.id);if(error)msg(error.message);else manageReadyGames()};div.append(b);$('readyGames').append(div);
+ }
+ const original=Array.from($('readyGames').children);
+ for(const subject of ['Türkçe','Matematik','Fen Bilimleri','Hayat Bilgisi']){
+  const fold=document.createElement('details');fold.className='teacher-section';const sum=document.createElement('summary');
+  sum.textContent=(subject==='Matematik'?'🧮 ':subject==='Türkçe'?'📚 ':subject==='Fen Bilimleri'?'🔬 ':'🌱 ')+subject;fold.append(sum);
+  if(subject==='Matematik')for(const card of original)fold.append(card);
+  if(!fold.querySelector('.panel')){const empty=document.createElement('p');empty.textContent='Bu ders için henüz oyun yayınlanmadı.';empty.style.padding='12px';fold.append(empty)}
+  $('readyGames').append(fold);
  }
 }
 async function showSystemHealth(){
@@ -404,6 +421,13 @@ await showVideoParts();
  '<button type="button" class="alt" data-edit-lesson="'+esc(l.id)+'">✏️ Düzenle</button><button type="button" data-generate="'+esc(l.id)+'">✨ Etkinlik oluştur</button><button data-publish="'+esc(l.id)+'" data-value="'+(!l.published)+'">'+(l.published?'Yayından kaldır':'Yayınla')+'</button>'+
  (n>0?'<a href="ders-gorevleri.html?lesson='+encodeURIComponent(l.id)+'"><button class="alt" type="button">🚀 '+n+' etkinliği aç</button></a>':'')+'<button type="button" class="danger-soft" data-delete-activities="'+esc(l.id)+'" '+(n===0?'disabled':'')+'>Etkinlikleri sil</button><button type="button" class="danger" data-delete-lesson="'+esc(l.id)+'">Öğrenme Çıktısını ve etkinlikleri sil</button></div>'
  }).join(''):'Henüz ders bulunmuyor.';
+ for(const card of Array.from($('teacherLessons').children)){
+  if(!card.classList.contains('panel'))continue;
+  const fold=document.createElement('details');fold.className='teacher-section';
+  const head=document.createElement('summary');head.textContent=card.querySelector('b')?.textContent||'Ders';
+  card.parentNode.insertBefore(fold,card);fold.append(head,card);
+ }
+
  if(actError)msg('Etkinlik sayıları alınamadı: '+actError.message);
  document.querySelectorAll('[data-edit-lesson]').forEach(b=>b.onclick=()=>{
  const l=lessons.find(x=>x.id===b.dataset.editLesson);if(!l)return;
