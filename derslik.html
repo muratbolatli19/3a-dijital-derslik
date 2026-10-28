@@ -88,7 +88,11 @@ async function showStudentPreview(studentId){
  const name=document.createElement('h3');name.textContent='🚀 '+person.display_name;root.append(name);
  const points=(a.data||[]).reduce((n,x)=>n+x.points,0)+(t.data||[]).reduce((n,x)=>n+x.score,0)+(g.data||[]).reduce((n,x)=>n+x.score,0)+(prog.data||[]).filter(x=>x.status==='completed').length*10;
  const summary=document.createElement('p');summary.textContent='⭐ Toplam puan: '+points+' · 🎯 Tamamlanan görev: '+(prog.data||[]).filter(x=>x.status==='completed').length;root.append(summary);
- const notice=document.createElement('h3');notice.textContent='📚 Öğrencinin göreceği haftalık dersler';root.append(notice);
+ const shortcuts=document.createElement('div');shortcuts.className='panel';const sh=document.createElement('h3');sh.textContent='🎮 Öğrencinin etkinlik ve test merkezleri';shortcuts.append(sh);
+for(const [label,url] of [['📝 Online testleri ve Yıldız Ligi’ni aç','oyun-test-merkezi.html'],['🌉 Yuvarlama Köprüsü oyununu aç','yuvarlama-koprusu.html']]){
+const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=label;link.style.cssText='display:block;margin:12px 0;font-weight:700';shortcuts.append(link)}
+const caution=document.createElement('p');caution.className='muted';caution.textContent='Öğretmen oturumunda açılır. Öğrenci puanı kaydetmek için öğrenci hesabıyla giriş gerekir.';shortcuts.append(caution);root.append(shortcuts);
+const notice=document.createElement('h3');notice.textContent='📚 Öğrencinin göreceği haftalık dersler';root.append(notice);
  if(!(lessons.data||[]).length){const empty=document.createElement('p');empty.textContent='Henüz yayınlanan ders yok.';root.append(empty)}
  for(const l of lessons.data||[]){
  const item=document.createElement('div');item.className='panel';
@@ -105,7 +109,7 @@ async function showStudentPreview(studentId){
   if(!(acts||[]).length){const blank=document.createElement('p');blank.textContent='Bu ders için henüz etkinlik eklenmedi.';section.append(blank)}
   else for(const a of acts){const p=document.createElement('p');p.textContent='🎯 '+(a.prompt||'Etkinlik');section.append(p)}
  };
- item.append(open,section);root.append(item);
+ const taskLink=document.createElement('a');taskLink.href='ders-gorevleri.html?lesson='+encodeURIComponent(l.id);taskLink.target='_blank';taskLink.rel='noopener noreferrer';taskLink.textContent='🚀 Gerçek interaktif ders ve soru ekranını aç';taskLink.style.cssText='display:block;margin:12px 0;font-weight:700';item.append(open,taskLink,section);root.append(item);
 }
  if([a,t,g,prog,lessons].some(x=>x.error)){const err=document.createElement('p');err.textContent='Bazı bilgiler alınamadı. Lütfen erişim kurallarını kontrol edin.';root.append(err)}
 }
