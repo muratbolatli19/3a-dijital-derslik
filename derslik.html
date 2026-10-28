@@ -582,7 +582,7 @@ async function renderStudentProfile(){
   db.from('class_game_scores').select('score').eq('student_id',me.id),
   db.from('learning_awards').select('points,kind').eq('student_id',me.id),
   db.from('progress').select('activity_id,status').eq('student_id',me.id).eq('status','completed'),
-  db.from('learning_awards').select('lesson_id,kind,part_key').eq('student_id',me.id)
+  db.from('learning_awards').select('lesson_id,kind,part_key,points').eq('student_id',me.id)
  ]);
  const [r,t,g,a,p]=sources;
  const myRank=(r.data||[]).find(x=>x.is_me);
@@ -618,7 +618,7 @@ async function studentView(){
  for(const x of activityResponse.data||[])counts[x.lesson_id]=(counts[x.lesson_id]||0)+1;
  for(const x of videoResponse.data||[])videos[x.lesson_id]=(videos[x.lesson_id]||0)+1;
  const done=new Set((progressResponse.data||[]).map(x=>x.activity_id));
- const videoCompletions=(awardResponse.data||[]).filter(x=>x.kind==='video');
+ const videoCompletions=(awardResponse.data||[]).filter(x=>x.kind==='video'&&Number(x.points)>0);
  const videoDone=id=>videoCompletions.some(x=>x.lesson_id===id);
  const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
  const number=name=>Number(parts.find(p=>p.type===name)?.value);
