@@ -34,7 +34,7 @@ button.danger{background:#b72e55;box-shadow:0 4px 0 #7a1737;color:white}button.d
 <label>Video bağlantısı (isteğe bağlı, doğrudan MP4 veya YouTube)</label><input id="video" type="url" placeholder="https://..."><label>Ya da bilgisayarınızdan MP4/WebM video seçin (en fazla 50 MB)</label><input id="videoFile" type="file" accept="video/mp4,video/webm"><p class="muted">50 MB üzerindeki videolar ücretsiz Supabase planına doğrudan yüklenemez. Videoyu küçültün veya YouTube bağlantısı ekleyin. Yalnızca paylaşma hakkına sahip olduğunuz videoları yükleyin.</p>
 <button type="submit">Taslak dersi kaydet</button></form><p class="muted">Dersler başlangıçta taslak kalır. Yayınlamak için aşağıdaki listeden Yayınla seçin.</p></div>
 <div class="panel"><h3>Ders yönetimi</h3><div class="panel"><h3>🎬 Bölümlü Video Yönetimi</h3><p>Her video bölümünü ayrı ayrı yükleyin (en fazla 50 MB). Öğrenci sırayla izleyebilir.</p><label>Öğrenme çıktısı</label><select id="partLesson"></select><label>Bölüm numarası</label><input id="partNumber" type="number" min="1" max="100" value="1"><label>Bölüm adı</label><input id="partTitle" placeholder="1. Bölüm - Giriş"><label>Video bağlantısı (YouTube veya MP4)</label><input id="partUrl" type="url" placeholder="https://..."><label>Veya video dosyası</label><input id="partFile" type="file" accept="video/mp4,video/webm"><button id="partSave" type="button">💾 Bölümü ekle</button><p id="partStatus" aria-live="polite"></p><div id="partList"></div></div><div id="teacherLessons"></div><div class="panel" style="background:#fff9ef;border:2px solid #f3dbac"><h3>🗑️ Çöp Kutusu · Geri Yükle</h3><p class="muted">Silinen öğrenme çıktıları ve etkinlikler kalıcı olarak yok edilmez. Öğrenci ilerlemeleri saklanır.</p><div id="trashLessons"></div><div id="trashActivities"></div></div></div>
-<div class="panel"><h3>📊 Öğrenci hesapları ve ilerleme</h3><div class="panel"><h4>👤 Yeni öğrenci hesabı oluştur</h4><p class="muted">Sadece öğretmen yetkisiyle çalışır. Öğrenci kodu 4–8 rakam, ilk şifre en az 12 karakter olmalıdır.</p><div class="grid"><div><label>Öğrenci adı soyadı</label><input id="newStudentName" autocomplete="off" placeholder="Öğrenci adı soyadı"></div><div><label>Öğrenci kodu</label><input id="newStudentCode" autocomplete="off" inputmode="numeric" placeholder="1001"></div><div><label>İlk şifre</label><input id="newStudentPassword" type="password" autocomplete="new-password" placeholder="En az 12 karakter"></div></div><button id="createStudent" type="button">Öğrenci hesabını güvenli oluştur</button><p id="studentActionMessage" aria-live="polite"></p></div><div id="progressSummary" class="grid"></div><div id="progressDetails"></div><p>Gerçek öğrenci profilleri yalnızca yetkili yönetim işleminden sonra oluşturulacaktır. Öğrenci şifrelerini GitHub koduna yazmayın.</p><div id="studentList"></div></div></div>
+<div class="panel"><h3>📊 Öğrenci hesapları ve ilerleme</h3><div class="panel"><h4>👤 Yeni öğrenci hesabı oluştur</h4><p class="muted">Sadece öğretmen yetkisiyle çalışır. Öğrenci kodu 4–8 rakam, ilk şifre en az 12 karakter olmalıdır.</p><div class="grid"><div><label>Öğrenci adı soyadı</label><input id="newStudentName" autocomplete="off" placeholder="Öğrenci adı soyadı"></div><div><label>Öğrenci kodu</label><input id="newStudentCode" autocomplete="off" inputmode="numeric" placeholder="1001"></div><div><label>İlk şifre</label><input id="newStudentPassword" type="password" autocomplete="new-password" placeholder="En az 12 karakter"></div></div><button id="createStudent" type="button">Öğrenci hesabını güvenli oluştur</button><p id="studentActionMessage" aria-live="polite"></p></div><div class="panel"><h4>👥 Toplu öğrenci hesabı hazırlama</h4><p class="muted">Öğrenci adlarını her satıra bir kişi gelecek şekilde yapıştırın. Kodları ve güçlü ilk şifreleri yalnızca bu cihazda oluşturulur. Listeyi kontrol edip onaylayınca hesaplar sunucuda açılır. Giriş bilgileri yalnızca sizin indireceğiniz CSV dosyasında tutulur.</p><textarea id="bulkStudentNames" rows="8" placeholder="Öğrenci Adı Soyadı&#10;Diğer Öğrenci Adı Soyadı"></textarea><button id="bulkPreview" type="button" class="alt">19 kişilik listeyi hazırla</button><div id="bulkPreviewList"></div><button id="bulkCreate" type="button" disabled>Onaylı listedeki hesapları oluştur</button><button id="bulkDownload" type="button" class="alt" disabled>Giriş bilgilerini CSV indir</button><p id="bulkStatus" aria-live="polite"></p></div><div id="progressSummary" class="grid"></div><div id="progressDetails"></div><p>Gerçek öğrenci profilleri yalnızca yetkili yönetim işleminden sonra oluşturulacaktır. Öğrenci şifrelerini GitHub koduna yazmayın.</p><div id="studentList"></div></div></div>
 <div id="student" class="hidden"><div class="panel"><a href="oyun-test-merkezi.html"><button type="button">🎮 Online Testlerim ve Yıldız Ligi</button></a></div><h3>Haftalık derslerim</h3><div id="studentLessons"></div></div>
 </div><p id="status" role="status" aria-live="polite"></p>
 </main><footer>Hazırlayan: Murat Bolatlı · 3/A Dijital Derslik · Ücretsiz sürüm</footer>
@@ -268,6 +268,40 @@ $('createStudent').onclick=async()=>{
  const result=await response.json();if(!response.ok)throw Error(result.error||'Hesap oluşturulamadı');
  $('newStudentPassword').value='';$('studentActionMessage').textContent='Öğrenci hesabı oluşturuldu: '+code+'. Şifreyi güvenli şekilde öğrenci velisine iletin.';teacherView();
  }catch(err){$('studentActionMessage').textContent=err.message}finally{button.disabled=false}
+};
+let preparedStudents=[];
+function randomFirstPassword(){const bytes=crypto.getRandomValues(new Uint8Array(18));return Array.from(bytes,b=>'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'[b%57]).join('')}
+function getBulkLines(){return $('bulkStudentNames').value.split(/\r?\n/).map(x=>x.trim().replace(/\s+/g,' ')).filter(Boolean)}
+$('bulkPreview').onclick=async()=>{
+ const names=getBulkLines();if(!names.length||names.length>40){$('bulkStatus').textContent='1–40 öğrenci adı girin.';return}
+ const unique=new Set(names.map(x=>x.toLocaleLowerCase('tr-TR')));if(unique.size!==names.length){$('bulkStatus').textContent='Listede tekrar eden öğrenci adları var.';return}
+ const {data:existing,error}=await db.from('profiles').select('student_code').eq('role','student');if(error){$('bulkStatus').textContent=error.message;return}
+ const used=new Set((existing||[]).map(x=>String(x.student_code)));let candidate=3001;
+ preparedStudents=names.map(name=>{while(used.has(String(candidate)))candidate++;const code=String(candidate++);used.add(code);return{name,code,password:randomFirstPassword(),status:'hazır'}});
+ $('bulkPreviewList').textContent=preparedStudents.map(x=>x.code+' · '+x.name).join('\n');$('bulkPreviewList').style.whiteSpace='pre-line';
+ $('bulkStatus').textContent=preparedStudents.length+' hesap hazırlandı. Kodları, isimleri kontrol edin. Henüz hesap oluşturulmadı.';
+ $('bulkCreate').disabled=false;$('bulkDownload').disabled=true;
+};
+$('bulkStudentNames').addEventListener('input',()=>{preparedStudents=[];$('bulkCreate').disabled=true;$('bulkDownload').disabled=true;$('bulkPreviewList').textContent='';});
+$('bulkCreate').onclick=async()=>{
+ if(profile?.role!=='teacher'||!preparedStudents.length)return;
+ if(!window.confirm(preparedStudents.length+' öğrenci için gerçek hesap oluşturulacak. İsimleri ve kodları kontrol ettiniz mi?'))return;
+ const btn=$('bulkCreate');btn.disabled=true;
+ const {data:{session}}=await db.auth.getSession();if(!session){$('bulkStatus').textContent='Öğretmen oturumu gerekli.';btn.disabled=false;return}
+ let ok=0;for(const st of preparedStudents){if(st.status==='oluşturuldu')continue;
+  try{const response=await fetch('https://zhmkyfouskthqgrhvhqp.supabase.co/functions/v1/teacher-create-student',{method:'POST',headers:{'Content-Type':'application/json',apikey:'sb_publishable_YcqB4BO9knYzHk4KKLye3A_ilBb6I9u',Authorization:'Bearer '+session.access_token},body:JSON.stringify({name:st.name,code:st.code,password:st.password})});const data=await response.json();if(!response.ok)throw Error(data.error||'Hesap açılmadı');st.status='oluşturuldu';ok++}catch(e){st.status='hata: '+e.message}
+  $('bulkStatus').textContent='Oluşturulan: '+ok+' / '+preparedStudents.length;
+ }
+ $('bulkPreviewList').textContent=preparedStudents.map(x=>x.code+' · '+x.name+' — '+x.status).join('\n');
+ $('bulkDownload').disabled=!preparedStudents.some(x=>x.status==='oluşturuldu');btn.disabled=!preparedStudents.some(x=>x.status!=='oluşturuldu');
+ await showSystemHealth();
+};
+$('bulkDownload').onclick=()=>{
+ const data=preparedStudents.filter(x=>x.status==='oluşturuldu');if(!data.length)return;
+ const clean=x=>'"'+String(x).replace(/^[=+@-]/,' ').replace(/"/g,'""')+'"';
+ const csv='\uFEFFAd Soyad;Öğrenci Kodu;İlk Şifre\r\n'+data.map(x=>[x.name,x.code,x.password].map(clean).join(';')).join('\r\n');
+ const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='3A_ogrenci_giris_bilgileri.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);
+ $('bulkStatus').textContent='Giriş bilgileri indirildi. Bu dosyada öğrenci şifreleri bulunur; yalnızca güvenli ortamda saklayın.';
 };
 let parsedWeek=[];
 $('weeklyParse').onclick=()=>{
