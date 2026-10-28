@@ -21,9 +21,9 @@ button.danger{background:#b72e55;box-shadow:0 4px 0 #7a1737;color:white}button.d
 <main class="wrap"><div class="panel" id="landingLesson"><h3>🪐 Etkileşimli Kesir Görevleri</h3><p>Matematik öğrenme çıktısınına bağlı 5 görsel ve düşünme etkinliği. Öğretmen olarak önizleyebilir, yayınladıktan sonra öğrenci hesaplarıyla tamamlatabilirsiniz.</p><a href="kesir-gorevleri-v2.html"><button>Etkinlikleri aç →</button></a></div>
 <div class="panel" id="auth">
 <h2>Güvenli giriş</h2><p class="muted">19 öğrenci ve 1 öğretmen hesabı hazır. Giriş türünü seçip mevcut bilgilerinizle devam edin.</p>
-<div class="row"><button type="button" id="chooseTeacher" class="alt">👨‍🏫 Öğretmen girişi</button><button type="button" id="chooseStudent" class="alt">🚀 Öğrenci girişi</button></div><p id="loginHint" class="muted">Öğretmen e-postanızı veya öğrenci kodunuzu girin.</p><div id="studentPicker" class="hidden" style="margin:12px 0"><label for="studentSelect">Öğrencinin adı ve soyadı</label><select id="studentSelect" style="width:100%;padding:12px;border-radius:10px;border:1px solid #b0c4e1"><option value="">Öğrenciyi seçin</option></select></div><div class="grid"><div><label id="loginLabel">E-posta veya öğrenci kodu</label><input id="email" type="text" inputmode="text" autocomplete="username" placeholder="E-posta veya öğrenci kodu"></div><div><label>Şifre</label><input id="password" type="password" autocomplete="current-password" placeholder="Şifre (en az 12 karakter)"></div></div>
+<div class="row"><button type="button" id="chooseTeacher" class="alt">👨‍🏫 Öğretmen girişi</button><button type="button" id="chooseStudent" class="alt">🚀 Öğrenci girişi</button></div><p id="loginHint" class="muted">Öğretmen e-postanızı veya öğrenci kodunuzu girin.</p><div id="studentPicker" class="hidden" style="margin:12px 0"><label for="studentSelect">Öğrencinin adı ve soyadı</label><select id="studentSelect" style="width:100%;padding:12px;border-radius:10px;border:1px solid #b0c4e1"><option value="">Öğrenciyi seçin</option></select></div><div class="grid"><div><label id="loginLabel">E-posta veya öğrenci kodu</label><input id="email" type="text" inputmode="text" autocomplete="username" placeholder="E-posta veya öğrenci kodu"></div><div id="passwordField"><label>Şifre</label><input id="password" type="password" autocomplete="current-password" placeholder="Şifre (en az 12 karakter)"></div></div>
 <button id="signin">Giriş yap</button><button id="signup" class="alt hidden">İlk öğretmen hesabımı oluştur</button><button id="reset" class="alt">Şifremi sıfırla</button>
-<p class="notice">Öğrenciler adlarını seçip kendilerine verilen kod ve şifreyle giriş yapar. Kod tek başına şifre değildir. Öğretmen mevcut e-posta hesabını kullanır.</p>
+<p class="notice">Öğrenciler adlarını ve mevcut kodlarını girer. İlk girişte şifreyle doğrulanmış oturum gerekir; bu cihazda oturum sürüyorsa tekrar şifre istenmez. Öğretmen mevcut e-posta hesabını kullanır.</p>
 </div>
 <div class="panel hidden" id="main">
 <div class="row"><div><h2 id="greeting">Hoş geldiniz</h2><p class="muted" id="role"></p></div><button id="logout" class="alt">Çıkış</button></div>
@@ -178,16 +178,27 @@ const studentLoginRoster=[["ABDURRAHMAN HAMZA ÇETİN","3004"],["AHMET EMİR AYD
 const picker=$('studentSelect');
 for(const [name,code] of studentLoginRoster){const option=document.createElement('option');option.textContent=name;option.value=code;picker.append(option)}
 let loginMode='teacher';
-$('chooseTeacher').onclick=()=>{loginMode='teacher';$('studentPicker').classList.add('hidden');$('loginLabel').textContent='Öğretmen e-postası';$('email').placeholder='Öğretmen e-postanız';$('email').value='';$('loginHint').textContent='Mevcut öğretmen hesabınızla giriş yapın.';$('email').focus()};
-$('chooseStudent').onclick=()=>{loginMode='student';$('studentPicker').classList.remove('hidden');$('loginLabel').textContent='Öğrenci kodu';$('email').placeholder='Size verilen 4 haneli öğrenci kodu';$('email').value='';$('loginHint').textContent='Önce adınızı seçin, ardından öğrenci kodunuzu ve size verilen şifrenizi girin.';picker.focus()};
-picker.onchange=()=>{msg('');$('email').value='';$('password').value='';$('email').focus()};
+function studentPasswordStep(show){$('passwordField').classList.toggle('hidden',!show);$('password').required=show;}
+
+$('chooseTeacher').onclick=()=>{loginMode='teacher';studentPasswordStep(true);$('studentPicker').classList.add('hidden');$('loginLabel').textContent='Öğretmen e-postası';$('email').placeholder='Öğretmen e-postanız';$('email').value='';$('loginHint').textContent='Mevcut öğretmen hesabınızla giriş yapın.';$('email').focus()};
+$('chooseStudent').onclick=()=>{loginMode='student';studentPasswordStep(false);$('studentPicker').classList.remove('hidden');$('loginLabel').textContent='Öğrenci kodu';$('email').placeholder='Size verilen 4 haneli öğrenci kodu';$('email').value='';$('loginHint').textContent='Önce adınızı seçip kodunuzu girin. Bu cihazda geçerli oturum yoksa hesap şifreniz istenir.';picker.focus()};
+picker.onchange=()=>{studentPasswordStep(false);msg('');$('email').value='';$('password').value='';$('email').focus()};
 $('signin').onclick=async()=>{
  const identity=$('email').value.trim(),pass=$('password').value;
- if(!identity||!pass)return msg('Giriş kodunuzu/e-postanızı ve şifrenizi yazın.');
+ if(!identity)return msg('Öğrenci kodunuzu veya öğretmen e-postanızı yazın.');
  const isCode=/^\d{4,8}$/.test(identity);
  if(loginMode==='student'&&(!picker.value||picker.value!==identity))return msg('Önce adınızı seçin ve kendi öğrenci kodunuzu doğru girin.');
  if(loginMode==='teacher'&&isCode)return msg('Öğretmen girişi için e-posta adresinizi yazın.');
  if(!isCode&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identity))return msg('Öğrenci için 4–8 haneli kod, öğretmen için geçerli e-posta yazın.');
+ if(loginMode==='student'&&!pass){
+  const {data:{user:current}}=await db.auth.getUser();
+  if(current?.email?.toLowerCase()===identity+'@student.3a.invalid'){
+   const {data:person}=await db.from('profiles').select('role,active,student_code').eq('id',current.id).maybeSingle();
+   if(person?.role==='student'&&person.active&&person.student_code===identity){msg('');await refresh();return}
+  }
+  studentPasswordStep(true);msg('Bu cihazda doğrulanmış öğrenci oturumu yok. İlk giriş için mevcut hesap şifresini girin.');$('password').focus();return;
+ }
+ if(!pass)return msg('Hesap şifresini girin.');
  const button=$('signin');button.disabled=true;msg('Giriş kontrol ediliyor...');
  try{
  const email=isCode?identity+'@student.3a.invalid':identity;
