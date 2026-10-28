@@ -248,7 +248,7 @@ const notice=document.createElement('h3');notice.textContent='📚 Öğrencinin 
 }
  if([a,t,g,prog,lessons].some(x=>x.error)){const err=document.createElement('p');err.textContent='Bazı bilgiler alınamadı. Lütfen erişim kurallarını kontrol edin.';root.append(err)}
 }
-$('openStudentPreview').onclick=async()=>{
+if($('openStudentPreview'))$('openStudentPreview').onclick=async()=>{
  if(profile?.role!=='teacher')return;
  const {data,error}=await db.from('profiles').select('id,display_name').eq('role','student').order('display_name');
  if(error)return msg(error.message);
