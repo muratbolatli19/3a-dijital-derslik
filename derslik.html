@@ -21,9 +21,9 @@ button.danger{background:#b72e55;box-shadow:0 4px 0 #7a1737;color:white}button.d
 <main class="wrap"><div class="panel" id="landingLesson"><h3>🪐 Etkileşimli Kesir Görevleri</h3><p>Matematik öğrenme çıktısınına bağlı 5 görsel ve düşünme etkinliği. Öğretmen olarak önizleyebilir, yayınladıktan sonra öğrenci hesaplarıyla tamamlatabilirsiniz.</p><a href="kesir-gorevleri-v2.html"><button>Etkinlikleri aç →</button></a></div>
 <div class="panel" id="auth">
 <h2>Güvenli giriş</h2><p class="muted">19 öğrenci ve 1 öğretmen hesabı hazır. Giriş türünü seçip mevcut bilgilerinizle devam edin.</p>
-<div class="row"><button type="button" id="chooseTeacher" class="alt">👨‍🏫 Öğretmen girişi</button><button type="button" id="chooseStudent" class="alt">🚀 Öğrenci girişi</button></div><p id="loginHint" class="muted">Öğretmen e-postanızı veya öğrenci kodunuzu girin.</p><div class="grid"><div><label id="loginLabel">E-posta veya öğrenci kodu</label><input id="email" type="text" autocomplete="username" placeholder="E-posta veya öğrenci kodu"></div><div><label>Şifre</label><input id="password" type="password" autocomplete="current-password" placeholder="Şifre (en az 12 karakter)"></div></div>
+<div class="row"><button type="button" id="chooseTeacher" class="alt">👨‍🏫 Öğretmen girişi</button><button type="button" id="chooseStudent" class="alt">🚀 Öğrenci girişi</button></div><p id="loginHint" class="muted">Öğretmen e-postanızı veya öğrenci kodunuzu girin.</p><div id="studentPicker" class="hidden" style="margin:12px 0"><label for="studentSelect">Öğrencinin adı ve soyadı</label><select id="studentSelect" style="width:100%;padding:12px;border-radius:10px;border:1px solid #b0c4e1"><option value="">Öğrenciyi seçin</option></select></div><div class="grid"><div><label id="loginLabel">E-posta veya öğrenci kodu</label><input id="email" type="text" inputmode="text" autocomplete="username" placeholder="E-posta veya öğrenci kodu"></div><div><label>Şifre</label><input id="password" type="password" autocomplete="current-password" placeholder="Şifre (en az 12 karakter)"></div></div>
 <button id="signin">Giriş yap</button><button id="signup" class="alt hidden">İlk öğretmen hesabımı oluştur</button><button id="reset" class="alt">Şifremi sıfırla</button>
-<p class="notice">Öğrenciler 4–8 rakamlı öğrenci kodu ve kendilerine verilen şifreyle giriş yapar. Öğretmen mevcut e-posta hesabını kullanır.</p>
+<p class="notice">Öğrenciler adlarını seçip kendilerine verilen kod ve şifreyle giriş yapar. Kod tek başına şifre değildir. Öğretmen mevcut e-posta hesabını kullanır.</p>
 </div>
 <div class="panel hidden" id="main">
 <div class="row"><div><h2 id="greeting">Hoş geldiniz</h2><p class="muted" id="role"></p></div><button id="logout" class="alt">Çıkış</button></div>
@@ -174,12 +174,19 @@ $('teacher').classList.toggle('hidden',p.role!=='teacher');$('student').classLis
 setupDashboardNavigation(p.role==='teacher'?'teacher':'student');
 if(p.role==='teacher'){await teacherView();await showWeeklyOverview()}else await studentView()
 }
-$('chooseTeacher').onclick=()=>{$('loginLabel').textContent='Öğretmen e-postası';$('email').placeholder='Öğretmen e-postanız';$('loginHint').textContent='Mevcut öğretmen hesabınızla giriş yapın.';$('email').focus()};
-$('chooseStudent').onclick=()=>{$('loginLabel').textContent='Öğrenci giriş kodu';$('email').placeholder='Örn. 3001';$('loginHint').textContent='Öğrenci kodunuzu ve verilen şifrenizi girin.';$('email').focus()};
+const studentLoginRoster=[["ABDURRAHMAN HAMZA ÇETİN","3004"],["AHMET EMİR AYDIN","3003"],["AHMET SELİM EKİCİ","3018"],["AMİNE BERRA İNCETEKİN","3019"],["ELİF KARAHAN","3005"],["EYMEN EROL","3006"],["FERHAT ENVER ÜSTÜNDAĞ","3007"],["FERİHA ÖZAT","3008"],["GÖRKEM ENES PEKTANE","3009"],["HALİL İBRAHİM ÇALIŞICI","3010"],["HÜMEYRA OKUR","3001"],["İBRAHİM KEREM ERCAN","3011"],["KÜRŞAD HAMZA YILMAZBAŞ","3012"],["MİRA ÖZTÜRK","3002"],["NECATİ ARAS KIZILARSLAN","3013"],["ÖMER ASAF KESKİN","3017"],["ÖMER YİĞİT KAYA","3016"],["SARE KESKİN","3015"],["ŞERİFE GÜLŞADE ÇELİK","3014"]];
+const picker=$('studentSelect');
+for(const [name,code] of studentLoginRoster){const option=document.createElement('option');option.textContent=name;option.value=code;picker.append(option)}
+let loginMode='teacher';
+$('chooseTeacher').onclick=()=>{loginMode='teacher';$('studentPicker').classList.add('hidden');$('loginLabel').textContent='Öğretmen e-postası';$('email').placeholder='Öğretmen e-postanız';$('email').value='';$('loginHint').textContent='Mevcut öğretmen hesabınızla giriş yapın.';$('email').focus()};
+$('chooseStudent').onclick=()=>{loginMode='student';$('studentPicker').classList.remove('hidden');$('loginLabel').textContent='Öğrenci kodu';$('email').placeholder='Size verilen 4 haneli öğrenci kodu';$('email').value='';$('loginHint').textContent='Önce adınızı seçin, ardından öğrenci kodunuzu ve size verilen şifrenizi girin.';picker.focus()};
+picker.onchange=()=>{msg('');$('email').value='';$('password').value='';$('email').focus()};
 $('signin').onclick=async()=>{
  const identity=$('email').value.trim(),pass=$('password').value;
  if(!identity||!pass)return msg('Giriş kodunuzu/e-postanızı ve şifrenizi yazın.');
  const isCode=/^\d{4,8}$/.test(identity);
+ if(loginMode==='student'&&(!picker.value||picker.value!==identity))return msg('Önce adınızı seçin ve kendi öğrenci kodunuzu doğru girin.');
+ if(loginMode==='teacher'&&isCode)return msg('Öğretmen girişi için e-posta adresinizi yazın.');
  if(!isCode&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identity))return msg('Öğrenci için 4–8 haneli kod, öğretmen için geçerli e-posta yazın.');
  const button=$('signin');button.disabled=true;msg('Giriş kontrol ediliyor...');
  try{
