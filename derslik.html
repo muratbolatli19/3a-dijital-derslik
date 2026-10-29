@@ -410,7 +410,7 @@ $('refreshSystemHealth').onclick=showSystemHealth;
 async function teacherView(){await showSystemHealth();await manageOnlineTests();await manageReadyGames();
  const {data:lessons,error}=await db.from('lessons').select('id,title,subject,outcome,explanation,video_url,published,week_start,deleted_at').is('deleted_at',null).order('week_start',{ascending:false});if(error){msg(error.message);return}
  const {data:acts,error:actError}=await db.from('activities').select('lesson_id,deleted_at').is('deleted_at',null);
- const counts={};for(const a of acts||[])counts[a.lesson_id]=(counts[a.lesson_id]||0)+1;
+ const counts={};for(const a of acts||[])if(!a.deleted_at)counts[a.lesson_id]=(counts[a.lesson_id]||0)+1;
 const partSelect=$('partLesson'),prior=partSelect.value;partSelect.innerHTML=(lessons||[]).map(l=>'<option value="'+esc(l.id)+'">'+esc(l.subject)+' · '+esc(l.title)+'</option>').join('');if((lessons||[]).some(l=>l.id===prior))partSelect.value=prior;
 await showVideoParts();
  $('teacherLessons').innerHTML=lessons?.length?lessons.map(l=>{
@@ -595,7 +595,8 @@ async function renderStudentProfile(){
   db.from('test_scores').select('score').eq('student_id',me.id),
   db.from('class_game_scores').select('score').eq('student_id',me.id),
   db.from('learning_awards').select('points,kind').eq('student_id',me.id),
-  db.from('progress').select('activity_id,status').eq('student_id',me.id).eq('status','completed')
+  db.from('progress').select('activity_id,status').eq('student_id',me.id).eq('status','completed'),
+  db.from('learning_awards').select('lesson_id,kind,part_key,points').eq('student_id',me.id)
  ]);
  const [r,t,g,a,p]=sources;
  const myRank=(r.data||[]).find(x=>x.is_me);
