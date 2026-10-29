@@ -16,7 +16,7 @@ async function loadGames(){
   const head=document.createElement('summary');head.textContent=({'Türkçe':'📚','Matematik':'🧮','Fen Bilimleri':'🔬','Hayat Bilgisi':'🌱','Klasik Oyunlar':'🎲'}[subject])+' '+subject;fold.append(head);
   if(subject==='Türkçe'){
    const item=document.createElement('div');item.className='test-card';
-   const link=document.createElement('a');link.href='buyuk-harf-balonu.html';link.target='_top';link.textContent='🎈 Büyük Harf Avı – Balon Patlatma · Oyunu başlat';link.style.cssText='display:inline-block;font-weight:900;font-size:19px;padding:12px 0';
+   const link=document.createElement('a');link.href='buyuk-harf-balonu.html?v=20261029-3';link.target='_top';link.onclick=(e)=>{e.preventDefault();window.top.location.assign(link.href)};link.textContent='🎈 Büyük Harf Avı – Balon Patlatma · Oyunu başlat';link.style.cssText='display:inline-block;font-weight:900;font-size:19px;padding:12px 0';
    const note=document.createElement('p');note.textContent='10 cümle · Büyük harfle yazılması gereken kelimeyi bul, balonu patlat! Dokunmatik tahtaya uygun.';item.append(link,note);fold.append(item);
   }
   if(subject==='Klasik Oyunlar'){
