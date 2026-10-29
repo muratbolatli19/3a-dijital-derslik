@@ -147,6 +147,24 @@
       "version": 1,
       "visibility": "shared",
       "published": true
+    },
+    {
+      "id": "tr-buyuk-harf-online-test-v1",
+      "kind": "online_test",
+      "subject": "Türkçe",
+      "title": "Büyük Harflerin Kullanımı – Yeni Nesil Test",
+      "description": "10 soru · 3 kolay, 4 orta, 3 zor · Bağlam temelli yazım kuralları.",
+      "learning_outcome": "T.Y.3.3.f",
+      "version": 1,
+      "visibility": "shared",
+      "published": true,
+      "provider": "supabase-online-tests",
+      "provider_id": "2bc2d251-d5a9-4f6f-aeb7-57dfe69d1dec",
+      "question_distribution": {
+        "easy": 3,
+        "medium": 4,
+        "hard": 3
+      }
     }
   ]
 }
