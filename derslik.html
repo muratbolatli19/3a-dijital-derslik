@@ -49,6 +49,17 @@ body:has(#main:not(.hidden)) .wrap{margin-top:9px!important}
 .welcome-hero #logout{padding:8px 12px!important;font-size:14px!important}
 .welcome-hero:before{top:5px!important;font-size:17px!important}
 @media(max-width:700px){#main{padding:9px!important}.welcome-hero{min-height:86px!important;padding:8px 11px!important;gap:6px!important;margin-bottom:9px!important}.welcome-mark{width:73px!important;max-height:65px!important}.welcome-hero #greeting{font-size:20px!important}.welcome-hero #role{font-size:13px!important}}
+
+/* 2026 son ince ayar: dengeli ve dolgun ekran yerlesimi */
+body:has(#main:not(.hidden)) .wrap{max-width:1160px!important;margin:5px auto!important;padding:0 9px!important}
+#main{padding:9px 12px!important;margin:5px 0!important;border-radius:17px!important}
+.welcome-hero{min-height:87px!important;padding:7px 17px!important;margin:0 0 8px!important;border-radius:16px!important}
+.welcome-hero #greeting{font-size:clamp(22px,2.25vw,30px)!important}
+.welcome-mark{width:100px!important;max-height:73px!important}
+#main .dashboard-layout{gap:12px!important}
+#main .dashboard-sidebar{padding:9px!important}
+#main .dashboard-content>.dashboard-page>.panel{margin-top:6px!important}
+@media(max-width:700px){body:has(#main:not(.hidden)) .wrap{padding:0 6px!important;margin:4px auto!important}#main{padding:7px!important;margin:3px 0!important}.welcome-hero{min-height:78px!important;padding:6px 9px!important;margin-bottom:7px!important}.welcome-mark{width:66px!important;max-height:59px!important}#main .dashboard-layout{gap:8px!important}}
 </style>
 </head><body><header class="brand-header"><div class="brand-copy"><h1>Dijital Derslik</h1><p>Öğren · Keşfet · Başar</p></div><img src="dijital-derslik-yeni-amblem.png" onerror="this.onerror=null;this.src='dijital-derslik-logo-seffaf.png'" alt="Süleymaniye Okulları Dijital Derslik" class="brand-logo"></header>
 <main class="wrap">
