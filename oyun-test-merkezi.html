@@ -40,6 +40,14 @@ async function loadGames(){
   root.append(fold);
  }
 }
+
+/* PDF-KITAPLIK-DORT-DERS-2026 */
+const pdfKitaplik=[
+ {subject:'Türkçe',title:'Büyük Harflerin Kullanımı',file:'Dijital_Derslik_Turkce_Buyuk_Harfler_PDF_Testi.pdf'},
+ {subject:'Matematik',title:'Bütün, Yarım ve Çeyrek',file:'Dijital_Derslik_Matematik_Butun_Yarim_Ceyrek_PDF_Testi.pdf'},
+ {subject:'Fen Bilimleri',title:'Tehlike Radarı',file:'Dijital_Derslik_Fen_Bilimleri_Tehlike_Radari_PDF_Testi.pdf'},
+ {subject:'Hayat Bilgisi',title:'Sağlık Kalkanı',file:'Dijital_Derslik_Hayat_Bilgisi_Saglik_Kalkani_PDF_Testi.pdf'}
+];
 async function load(){
  const {tests}=await api({action:'list'});
  const {data:scores,error}=await db.from('test_scores').select('test_id,score').eq('student_id',session.user.id);if(error)throw error;
@@ -59,6 +67,15 @@ async function load(){
    if(isPdf){const a=document.createElement('a');a.href=t.pdf_url;a.target='_blank';a.rel='noopener noreferrer';a.className='test-download';a.textContent='📥 PDF dosyasını indir';p.append(a)}
    else{const button=document.createElement('button'),result=completed.get(t.id);button.textContent=result?'✅ Tamamlandı · '+result.score+' puan':'🚀 Testi çöz';button.disabled=!!result;button.onclick=()=>start(t);p.append(button)}
    fold.append(p);
+  }
+  if(isPdf){
+    const local=pdfKitaplik.find(x=>x.subject===subject);
+    if(local && !matching.some(t=>t.title===local.title)){
+      const href='./'+encodeURIComponent(local.file);
+      try {const response=await fetch(href,{method:'HEAD',cache:'no-store'});
+        if(response.ok){const p=document.createElement('div');p.className='test-card';const title=document.createElement('h3');title.textContent=local.title;p.append(title);const a=document.createElement('a');a.href=href;a.target='_blank';a.rel='noopener noreferrer';a.className='test-download';a.textContent='📥 PDF dosyasını indir';p.append(a);fold.append(p);matching.push(local)}
+      }catch(e){/* Dosya yüklenince otomatik görünecek. */}
+    }
   }
   if(!matching.length){const empty=document.createElement('p');empty.textContent='Bu derste henüz '+(isPdf?'PDF test':'online test')+' bulunmuyor.';fold.append(empty)}
   root.append(fold);
