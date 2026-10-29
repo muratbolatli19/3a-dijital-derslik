@@ -315,7 +315,7 @@ $('teacher').classList.toggle('hidden',p.role!=='teacher');$('student').classLis
 setupDashboardNavigation(p.role==='teacher'?'teacher':'student');
 if(p.role==='teacher'){await teacherView();await showWeeklyOverview();await loadStudentResetList()}else await studentView()
 }
-const studentLoginRoster=[["ABDURRAHMAN HAMZA ÇETİN","3004"],["AHMET EMİR AYDIN","3003"],["AHMET SELİM EKİCİ","3018"],["AMİNE BERRA İNCETEKİN","3019"],["ELİF KARAHAN","3005"],["EYMEN EROL","3006"],["FERHAT ENVER ÜSTÜNDAĞ","3007"],["FERİHA ÖZAT","3008"],["GÖRKEM ENES PEKTANE","3009"],["HALİL İBRAHİM ÇALIŞICI","3010"],["HÜMEYRA OKUR","3001"],["İBRAHİM KEREM ERCAN","3011"],["KÜRŞAD HAMZA YILMAZBAŞ","3012"],["MİRA ÖZTÜRK","3002"],["NECATİ ARAS KIZILARSLAN","3013"],["ÖMER ASAF KESKİN","3017"],["ÖMER YİĞİT KAYA","3016"],["SARE KESKİN","3015"],["ŞERİFE GÜLŞADE ÇELİK","3014"]];
+const studentLoginRoster=[["Demo Öğrenci","1001"],["ABDURRAHMAN HAMZA ÇETİN","3004"],["AHMET EMİR AYDIN","3003"],["AHMET SELİM EKİCİ","3018"],["AMİNE BERRA İNCETEKİN","3019"],["ELİF KARAHAN","3005"],["EYMEN EROL","3006"],["FERHAT ENVER ÜSTÜNDAĞ","3007"],["FERİHA ÖZAT","3008"],["GÖRKEM ENES PEKTANE","3009"],["HALİL İBRAHİM ÇALIŞICI","3010"],["HÜMEYRA OKUR","3001"],["İBRAHİM KEREM ERCAN","3011"],["KÜRŞAD HAMZA YILMAZBAŞ","3012"],["MİRA ÖZTÜRK","3002"],["NECATİ ARAS KIZILARSLAN","3013"],["ÖMER ASAF KESKİN","3017"],["ÖMER YİĞİT KAYA","3016"],["SARE KESKİN","3015"],["ŞERİFE GÜLŞADE ÇELİK","3014"]];
 const picker=$('studentSelect');
 for(const [name,code] of studentLoginRoster){const option=document.createElement('option');option.textContent=name;option.value=code;picker.append(option)}
 let loginMode='teacher';
