@@ -90,6 +90,23 @@
       }
     },
     {
+      "id": "hb-saglik-kalkani-v1",
+      "kind": "game",
+      "subject": "Hayat Bilgisi",
+      "title": "🛡️ Sağlık Kalkanı – Mikrop Avcıları",
+      "description": "Üç farklı ortamda 10 yanlış sağlık alışkanlığını keşfet, doğru davranışa dönüştür ve kalkanı tamamla.",
+      "learning_outcome": "HB.3.2.1",
+      "url": "saglik-kalkani.html",
+      "version": 1,
+      "visibility": "shared",
+      "published": true,
+      "score_policy": {
+        "correct": 10,
+        "wrong": -1,
+        "max_wrong_per_question": 3
+      }
+    },
+    {
       "id": "klasik-yuvarlama-koprusu-v1",
       "kind": "game",
       "subject": "Klasik Oyunlar",
