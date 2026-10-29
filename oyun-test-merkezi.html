@@ -77,8 +77,9 @@ $('submit').onclick=async()=>{if(answers.some(x=>x===null)){$('message').textCon
    const card=document.createElement('div');card.className='review-card '+(ok?'review-correct':'review-incorrect');
    const title=document.createElement('strong');title.textContent=(ok?'✅ ':'❌ ')+item.number+'. soru · '+(ok?'Doğru':'Tekrar çalış');card.append(title);
    const prompt=document.createElement('p');prompt.textContent=item.prompt;card.append(prompt);
-   const chosen=document.createElement('p');chosen.textContent='Senin cevabın: '+(item.options?.[item.selected_index]??'Boş');card.append(chosen);
-   if(!ok){const right=document.createElement('p');right.textContent='Doğru cevap: '+(item.options?.[item.correct_index]??'Belirlenemedi');card.append(right)}
+   const formatAnswer=index=>Number.isInteger(index)&&index>=0&&index<(item.options||[]).length?String.fromCharCode(65+index)+'. '+item.options[index]:'Boş';
+   const chosen=document.createElement('p');chosen.textContent='Senin cevabın: '+formatAnswer(item.selected_index);card.append(chosen);
+   const right=document.createElement('p');right.textContent='Doğru cevap: '+formatAnswer(item.correct_index);card.append(right);
    if(item.outcome){const label=document.createElement('small');label.textContent='📘 Öğrenme çıktısı: '+item.outcome;card.append(label);const stat=outcomes.get(item.outcome)||{correct:0,total:0};stat.total++;if(ok)stat.correct++;outcomes.set(item.outcome,stat)}
    result.append(card);
   });
