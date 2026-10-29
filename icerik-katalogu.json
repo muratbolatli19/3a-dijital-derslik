@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "description": "Okul ve sınıftan bağımsız ortak içerik kataloğu. Okul/sınıf erişim kuralları henüz uygulanmıyor.",
+  "subjects": [
+    "Türkçe",
+    "Matematik",
+    "Fen Bilimleri",
+    "Hayat Bilgisi",
+    "Klasik Oyunlar"
+  ],
+  "items": [
+    {
+      "id": "tr-buyuk-harf-avı-v1",
+      "kind": "game",
+      "subject": "Türkçe",
+      "title": "🎈 Büyük Harf Avı – Balon Patlatma",
+      "description": "10 cümle · Yanlış büyük harf kullanımını bul ve balonu patlat. Akıllı tahtaya uygun.",
+      "learning_outcome": "Büyük Harflerin Yazımı",
+      "url": "buyuk-harf-balonu.html",
+      "version": 1,
+      "visibility": "shared",
+      "published": true,
+      "score_policy": {
+        "correct": 10,
+        "wrong": -1,
+        "max_wrong_per_question": 3,
+        "time_penalties": [
+          {
+            "after_seconds": 300,
+            "minus": 3
+          },
+          {
+            "after_seconds": 420,
+            "minus": 6
+          },
+          {
+            "after_seconds": 600,
+            "minus": 10
+          }
+        ]
+      }
+    },
+    {
+      "id": "klasik-yuvarlama-koprusu-v1",
+      "kind": "game",
+      "subject": "Klasik Oyunlar",
+      "title": "🌉 Yuvarlama Köprüsü",
+      "description": "En yakın onluğa yuvarlama · dokunmatik köprü oyunu.",
+      "learning_outcome": "Sayıları en yakın onluğa yuvarlama",
+      "url": "yuvarlama-koprusu.html",
+      "version": 1,
+      "visibility": "shared",
+      "published": true,
+      "score_policy": {
+        "correct": 10,
+        "wrong": -1,
+        "time_penalties": [
+          {
+            "after_seconds": 300,
+            "minus": 3
+          },
+          {
+            "after_seconds": 420,
+            "minus": 6
+          },
+          {
+            "after_seconds": 600,
+            "minus": 10
+          }
+        ]
+      }
+    },
+    {
+      "id": "klasik-es-zit-anlam-v1",
+      "kind": "game",
+      "subject": "Klasik Oyunlar",
+      "title": "📚 Eş ve Zıt Anlam Dedektifi",
+      "description": "Kelime bilgisini eğlenceli etkinliklerle tekrar et.",
+      "learning_outcome": "Eş ve zıt anlamlı kelimeler",
+      "url": "bilgi-macerasi.html?oyun=turkce",
+      "version": 1,
+      "visibility": "shared",
+      "published": true
+    }
+  ]
+}
