@@ -1,0 +1,27 @@
+name: Install approved classroom logo
+on:
+  push:
+    paths:
+      - '.github/workflows/install-classroom-logo.yml'
+permissions:
+  contents: write
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Download approved image from Canva media export
+        env:
+          IMAGE_URL: 'https://media.canva.com/v2/image-resize/format:PNG/height:112/quality:100/uri:ifs%3A%2F%2FM%2F803d730a-f84c-4638-a636-bd5ee79c48f6/watermark:F/width:200?csig=AAAAAAAAAAAAAAAAAAAAADaEe4fLjtCMVzjfoH6KJidRwsgu84HhiyQdC1MjRN03&exp=1793314993&osig=AAAAAAAAAAAAAAAAAAAAAJxiMDKwaNuRrX7F3Mir-j2M4NCU25AXIdI0aK3h8dpa&signer=media-rpc&token=AAIAAU0AJDgwM2Q3MzBhLWY4NGMtNDYzOC1hNjM2LWJkNWVlNzljNDhmNgAAAAABoYnnM2ibCSWJju8XlHS5VzgvE9rQ_tHiMumjcappoBWTcDlpIA&x-canva-quality=thumbnail'
+        run: |
+          curl --fail --location --retry 2 "$IMAGE_URL" --output dijital-derslik-onayli-logo.png
+          test "$(wc -c < dijital-derslik-onayli-logo.png)" -gt 3000
+      - name: Save logo in repository
+        run: |
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add dijital-derslik-onayli-logo.png
+          git commit -m "Install approved Digital Classroom image" || exit 0
+          git push
