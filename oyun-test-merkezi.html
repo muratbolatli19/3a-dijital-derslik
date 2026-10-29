@@ -11,18 +11,32 @@ async function leaderboard(){const{data,error}=await db.rpc('anonymous_test_lead
 async function loadGames(){
  const root=$('readyGameList');root.replaceChildren();
  const subjects=['Türkçe','Matematik','Fen Bilimleri','Hayat Bilgisi','Klasik Oyunlar'];
+ let games=[];
+ try{
+  const response=await fetch('icerik-katalogu.json',{cache:'no-store'});
+  if(!response.ok)throw Error('Katalog alınamadı');
+  const catalog=await response.json();
+  games=(catalog.items||[]).filter(item=>item.kind==='game'&&item.published===true&&item.visibility==='shared');
+ }catch(e){
+  root.textContent='Oyun kataloğu yüklenemedi. Sayfayı yenileyip tekrar deneyin.';
+  console.warn('İçerik kataloğu:',e);return;
+ }
  for(const subject of subjects){
-  const fold=document.createElement('details');fold.className='subject-fold';fold.open=subject==='Klasik Oyunlar';
+  const fold=document.createElement('details');fold.className='subject-fold';fold.open=subject==='Klasik Oyunlar'||subject==='Türkçe';
   const head=document.createElement('summary');head.textContent=({'Türkçe':'📚','Matematik':'🧮','Fen Bilimleri':'🔬','Hayat Bilgisi':'🌱','Klasik Oyunlar':'🎲'}[subject])+' '+subject;fold.append(head);
-  if(subject==='Türkçe'){
-   const item=document.createElement('div');item.className='test-card';
-   const link=document.createElement('a');link.href='buyuk-harf-balonu.html?v=20261029-3';link.target='_top';link.onclick=(e)=>{e.preventDefault();window.top.location.assign(link.href)};link.textContent='🎈 Büyük Harf Avı – Balon Patlatma · Oyunu başlat';link.style.cssText='display:inline-block;font-weight:900;font-size:19px;padding:12px 0';
-   const note=document.createElement('p');note.textContent='10 cümle · Büyük harfle yazılması gereken kelimeyi bul, balonu patlat! Dokunmatik tahtaya uygun.';item.append(link,note);fold.append(item);
+  const entries=games.filter(item=>item.subject===subject);
+  if(!entries.length){
+   const empty=document.createElement('p');empty.textContent='Bu ders için henüz oyun yayınlanmadı. Yeni oyun öğretmeniniz tarafından hazırlanacak.';fold.append(empty);
   }
-  if(subject==='Klasik Oyunlar'){
-   for(const entry of [{title:'🌉 Yuvarlama Köprüsü',href:'yuvarlama-koprusu.html'},{title:'📚 Eş ve Zıt Anlam Dedektifi',href:'bilgi-macerasi.html?oyun=turkce'}]){
-    const item=document.createElement('div');item.className='test-card';const link=document.createElement('a');link.href=entry.href;link.textContent=entry.title+' · Oyna';item.append(link);fold.append(item)}
-  }else{const empty=document.createElement('p');empty.textContent='Bu ders için henüz oyun yayınlanmadı. Yeni oyun öğretmeniniz tarafından hazırlanacak.';fold.append(empty)}
+  for(const entry of entries){
+   const item=document.createElement('div');item.className='test-card';
+   const link=document.createElement('a');
+   link.href=entry.url;link.target='_top';
+   link.onclick=e=>{e.preventDefault();window.top.location.assign(link.href)};
+   link.textContent=entry.title+' · Oyna';
+   link.style.cssText='display:inline-block;font-weight:900;font-size:19px;padding:12px 0';
+   const note=document.createElement('p');note.textContent=entry.description||'Oyunu başlat';item.append(link,note);fold.append(item);
+  }
   root.append(fold);
  }
 }
