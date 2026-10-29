@@ -160,11 +160,11 @@ const completedParts=new Set((completedVideos||[]).filter(x=>Number(x.points)>0)
 const {data:chapters}=await db.from('lesson_video_parts').select('id,part_number,title,video_url').eq('lesson_id',found.id).order('part_number');
 if(chapters?.length){
  const host=$('videoChapters');host.innerHTML='<h3>🎬 Bölümlü konu anlatımı</h3><p>Önce bölümleri sırayla izleyin, sonra etkinlikleri açın.</p>';
- const player=document.createElement('div'),buttons=document.createElement('div');buttons.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin:12px 0';host.append(buttons,player);
+ const player=document.createElement('div'),buttons=document.createElement('div');buttons.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin:7px 0 9px;position:sticky;top:0;z-index:3;background:#f7faff;padding:5px;border-radius:10px';host.append(buttons,player);
  function playPart(i){const part=chapters[i];player.replaceChildren();reward('start','video',part.id).catch(()=>{});[...buttons.children].forEach((b,j)=>b.style.opacity=j===i?'1':'.7');const u=new URL(part.video_url);let id=u.hostname==='youtu.be'?u.pathname.slice(1):u.hostname.endsWith('youtube.com')?u.searchParams.get('v')||u.pathname.split('/').pop():null;
  let media;if(id&&/^[A-Za-z0-9_-]{11}$/.test(id)){media=document.createElement('iframe');media.src='https://www.youtube-nocookie.com/embed/'+id;media.title=part.title;media.allowFullscreen=true;media.allow='encrypted-media; picture-in-picture'}else{media=document.createElement('video');media.src=u.href;media.controls=true;media.playsInline=true;media.preload='metadata'}
- media.style.cssText='width:100%;aspect-ratio:16/9;border:0;border-radius:16px;background:#172746';const heading=document.createElement('h4');heading.textContent=part.part_number+'. Bölüm · '+part.title;player.append(heading,media);
- const navigation=document.createElement('div');navigation.style.cssText='display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0';
+ media.style.cssText='display:block;width:100%;max-width:640px;max-height:360px;aspect-ratio:16/9;object-fit:contain;margin:8px auto;border:0;border-radius:14px;background:#172746';const heading=document.createElement('h4');heading.textContent=part.part_number+'. Bölüm · '+part.title;player.append(heading,media);
+ const navigation=document.createElement('div');navigation.style.cssText='display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:8px 0';
  const next=document.createElement('button');next.type='button';next.textContent=i<chapters.length-1?'▶ Sonraki Bölüme Geç ('+chapters[i+1].part_number+'. Bölüm)':'🎯 Etkinliklere Geç';
  next.onclick=()=>{if(i<chapters.length-1){playPart(i+1);host.scrollIntoView({behavior:'smooth',block:'start'})}else{$('introGo').click()}};
  navigation.append(next);
