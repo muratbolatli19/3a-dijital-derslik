@@ -660,6 +660,7 @@ async function studentView(){
  const currentWeek=now.toISOString().slice(0,10);
  const today=$('todayTasksList');today.replaceChildren();
  const weekly=(data||[]).filter(x=>x.week_start===currentWeek);
+ const subjectOrder=['Türkçe','Matematik','Fen Bilimleri','Hayat Bilgisi'];
  const intro=$('todayTasks')?.querySelector('p');
  if(intro)intro.textContent='📅 '+currentWeek+' haftası · Yayınlanan dersler ve kişisel görev durumun';
  if(!weekly.length){
@@ -667,7 +668,10 @@ async function studentView(){
   empty.textContent='🌤️ Bu hafta için henüz ders yayınlanmadı. Önceki çalışmaların Haftalık Derslerim bölümünde duruyor.';
   today.append(empty);
  }
- for(const lesson of weekly){
+ for(const subject of subjectOrder){
+ const subjectLessons=weekly.filter(x=>x.subject===subject);
+ if(!subjectLessons.length){const empty=document.createElement('div');empty.className='today-task-card';const name=document.createElement('strong');name.textContent=({'Türkçe':'📚','Matematik':'🧮','Fen Bilimleri':'🔬','Hayat Bilgisi':'🌱'})[subject]+' '+subject;const status=document.createElement('span');status.textContent='Bu haftanın dersi henüz yayınlanmadı.';empty.append(name,status);today.append(empty);continue}
+ for(const lesson of subjectLessons){
   const assigned=(activityResponse.data||[]).filter(x=>x.lesson_id===lesson.id);
   const completed=assigned.filter(x=>done.has(x.id)).length;
   const card=document.createElement('div');card.className='today-task-card';
@@ -680,22 +684,17 @@ async function studentView(){
   const link=document.createElement('a');link.href='ders-gorevleri.html?lesson='+encodeURIComponent(lesson.id);link.textContent=assigned.length&&completed===assigned.length?'🔁 Tekrar çalış':'🚀 Derse başla';
   card.append(link);today.append(card);
  }
+ }
  const root=$('studentLessons');root.replaceChildren();
  if(!(data||[]).length){const empty=document.createElement('p');empty.className='notice';empty.textContent='Henüz yayınlanmış bir ders yok. Öğretmeniniz ders yayınladığında burada görünecek.';root.append(empty)}
  const weeks=new Map();
  for(const l of data||[]){const week=l.week_start||'Tarih belirtilmemiş';if(!weeks.has(week))weeks.set(week,[]);weeks.get(week).push(l)}
- const toolbar=document.createElement('div');toolbar.className='archive-toolbar';
- const filterLabel=document.createElement('label');filterLabel.textContent='🔎 Ders seç: ';filterLabel.htmlFor='archiveSubject';
- const filter=document.createElement('select');filter.id='archiveSubject';
- for(const [value,label] of [['','Tüm dersler'],['Türkçe','📚 Türkçe'],['Matematik','🧮 Matematik'],['Fen Bilimleri','🔬 Fen Bilimleri'],['Hayat Bilgisi','🌱 Hayat Bilgisi']]){const option=document.createElement('option');option.value=value;option.textContent=label;filter.append(option)}
- filterLabel.append(filter);toolbar.append(filterLabel);root.append(toolbar);
- const archiveEntries=[];
- filter.onchange=()=>{for(const entry of archiveEntries){const show=filter.value===''||entry.subject===filter.value;entry.card.classList.toggle('hidden',!show)}for(const group of root.querySelectorAll('.week-group')){const visible=[...group.querySelectorAll('.student-lesson-card')].some(c=>!c.classList.contains('hidden'));group.classList.toggle('hidden',!visible)}};
  let weekIndex=0;
  const subjectIcons={'Türkçe':'📚','Matematik':'🧮','Fen Bilimleri':'🔬','Hayat Bilgisi':'🌱'};
  for(const [week,lessons] of weeks){
-  const panel=document.createElement('details');panel.className='week-group';panel.open=weekIndex===0;
-  const heading=document.createElement('summary');heading.textContent=(weekIndex===0?'⭐ Bu Haftanın Dersleri · ':'🗓️ Önceki Hafta · ')+week+' · '+lessons.length+' ders';panel.append(heading);
+  if(week===currentWeek){weekIndex++;continue}
+  const panel=document.createElement('details');panel.className='week-group';panel.open=false;
+  const heading=document.createElement('summary');heading.textContent='🗓️ Önceki Hafta · '+week+' · '+lessons.length+' ders';panel.append(heading);
   const group=document.createElement('div');group.className='week-lessons';panel.append(group);root.append(panel);
   const weekAssigned=lessons.flatMap(l=>(activityResponse.data||[]).filter(a=>a.lesson_id===l.id));const weekFinished=weekAssigned.filter(a=>done.has(a.id)).length;
   const weekSummary=document.createElement('p');weekSummary.className='archive-week-summary';weekSummary.textContent=progressResponse.error?'İlerleme bilgisi alınamadı':weekAssigned.length?'🎯 Haftalık etkinlikler: '+weekFinished+'/'+weekAssigned.length+' tamamlandı':'📘 Bu haftada etkinlik bulunmuyor';panel.insertBefore(weekSummary,group);
@@ -712,7 +711,7 @@ async function studentView(){
    if(count){const bar=document.createElement('progress');bar.max=count;bar.value=finished;bar.style.width='100%';bar.setAttribute('aria-label',l.title+' tamamlanma oranı');card.append(bar)}
    const videoTag=document.createElement('p');videoTag.className='completion-indicator';videoTag.textContent=awardResponse.error?'🎬 Video durumu alınamadı':videoDone(l.id)?'✅ İzleme kaydı mevcut':vid+(l.video_url?1:0)?'🎬 Video henüz tamamlanmadı':'🎬 Video eklenmemiş';card.append(videoTag);
    const a=document.createElement('a');a.href='ders-gorevleri.html?lesson='+encodeURIComponent(l.id);a.className='student-launch';a.textContent='🚀 Dersi keşfet';card.append(a);
-   group.append(card);archiveEntries.push({card,subject:l.subject});
+   group.append(card);
   }
   weekIndex++;
  }
