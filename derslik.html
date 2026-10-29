@@ -566,6 +566,11 @@ const byStudent={};for(const x of records||[]){if(!byStudent[x.student_id])byStu
 function renderTeacherReports(students,records,activityDetails,lessonDetails,tests,games,awards){
  const summary=$('reportSummary'),table=$('reportTable');if(!summary||!table)return;
  summary.replaceChildren();table.replaceChildren();
+ const reportFold=document.createElement('details');reportFold.className='teacher-fold';reportFold.open=true;
+ const reportLabel=document.createElement('summary');reportLabel.textContent='📊 Öğrenci Raporları';reportFold.append(reportLabel);
+ const missingFold=document.createElement('details');missingFold.className='teacher-fold';
+ const missingLabel=document.createElement('summary');missingLabel.textContent='📌 Eksik Çalışmalar';missingFold.append(missingLabel);
+ summary.append(reportFold,missingFold);reportFold.append(table);
  const published=(lessonDetails||[]).filter(x=>x.published);
  const relevant=new Map((activityDetails||[]).filter(x=>!x.deleted_at&&published.some(l=>l.id===x.lesson_id)).map(a=>[a.id,a]));
  const scoreMap=new Map(),gameMap=new Map(),awardMap=new Map();
@@ -593,13 +598,13 @@ function renderTeacherReports(students,records,activityDetails,lessonDetails,tes
   list.append(entry);
  }
  if(!ordered.length){const empty=document.createElement('p');empty.textContent=relevant.size?'✅ Yayımlanmış bütün etkinlikler tamamlanmış görünüyor.':'Henüz yayımlanmış etkinlik bulunmuyor.';list.append(empty)}
- alerts.append(list);summary.append(alerts);
- const heading=document.createElement('p');heading.textContent=rows.length+' öğrenci · '+published.length+' yayındaki ders · '+relevant.size+' etkinlik (yayındaki derslerde)';summary.append(heading);
- const note=document.createElement('p');note.className='muted';note.textContent='Eksik görev hesabı yalnızca yayımlanmış derslerdeki etkinliklere dayanır; bu rakam resmi kazanım yeterliği değerlendirmesi değildir.';summary.append(note);
+ alerts.append(list);missingFold.append(alerts);
+ const heading=document.createElement('p');heading.textContent=rows.length+' öğrenci · '+published.length+' yayındaki ders · '+relevant.size+' etkinlik (yayındaki derslerde)';reportFold.insertBefore(heading,table);
+ const note=document.createElement('p');note.className='muted';note.textContent='Eksik görev hesabı yalnızca yayımlanmış derslerdeki etkinliklere dayanır; bu rakam resmi kazanım yeterliği değerlendirmesi değildir.';reportFold.insertBefore(note,table);
  const scroll=document.createElement('div');scroll.style.cssText='overflow-x:auto';const grid=document.createElement('table');grid.style.cssText='width:100%;border-collapse:collapse;text-align:left';const header=document.createElement('tr');
  for(const label of ['Öğrenci','Görev (tamamlanan/yayındaki)','Eksik görev','⭐ Toplam','Ders bazında durum']){const th=document.createElement('th');th.textContent=label;th.style.cssText='padding:10px;border-bottom:2px solid #bbb';header.append(th)}grid.append(header);
  for(const row of rows){const tr=document.createElement('tr');const values=[row.person.display_name,row.valid+'/'+row.assigned,String(row.assigned-row.valid),String(row.points),Object.entries(row.subjects).map(([name,x])=>name+': '+x.done+'/'+x.total).join(' · ')||'Henüz yayımlanmış ders yok'];for(const value of values){const td=document.createElement('td');td.textContent=value;td.style.cssText='padding:10px;border-bottom:1px solid #ddd;vertical-align:top';tr.append(td)}grid.append(tr)}scroll.append(grid);table.append(scroll);
- const exportBtn=document.createElement('button');exportBtn.type='button';exportBtn.textContent='📥 Raporu CSV indir';exportBtn.onclick=()=>{const header=['Öğrenci','Tamamlanan','Yayındaki görev','Eksik','Puan',...new Set(rows.flatMap(x=>Object.keys(x.subjects)))];const csv=[header,...rows.map(x=>[x.person.display_name,x.valid,x.assigned,x.assigned-x.valid,x.points,...header.slice(5).map(k=>(x.subjects[k]?.done||0)+'/'+(x.subjects[k]?.total||0))])].map(c=>c.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\r\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='3A-gelisim-raporu.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};summary.append(exportBtn);
+ const exportBtn=document.createElement('button');exportBtn.type='button';exportBtn.textContent='📥 Raporu CSV indir';exportBtn.onclick=()=>{const header=['Öğrenci','Tamamlanan','Yayındaki görev','Eksik','Puan',...new Set(rows.flatMap(x=>Object.keys(x.subjects)))];const csv=[header,...rows.map(x=>[x.person.display_name,x.valid,x.assigned,x.assigned-x.valid,x.points,...header.slice(5).map(k=>(x.subjects[k]?.done||0)+'/'+(x.subjects[k]?.total||0))])].map(c=>c.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\r\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='3A-gelisim-raporu.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};reportFold.insertBefore(exportBtn,table);
 }
 if(studentError||progressError){const panel=$('reportSummary');if(panel)panel.textContent='⚠️ Rapor verileri yüklenemedi: '+(studentError?.message||progressError?.message);$('reportTable')?.replaceChildren()}else renderTeacherReports(students,records,activityDetails,lessonDetails,testScores,gameScores,lessonAwards);
 const totalStudents=students?.length||0;const completeStudents=(students||[]).filter(x=>(byStudent[x.id]?.completed||0)>0).length;
