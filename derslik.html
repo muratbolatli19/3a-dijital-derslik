@@ -219,7 +219,26 @@ function enhanceTeacherSections(root){
  wrapManagement($('partList')?.closest('.panel'),'🎬 Video Yönetimi');
  wrapManagement($('teacherLessons'),'📚 Öğrenme Çıktıları');
  wrapManagement($('trashLessons')?.closest('.panel'),'🗑️ Çöp Kutusu · Geri Yükle');
- const test=$('manageTests')?.closest('.panel');if(test)foldElement(test,'📝 Yayındaki ve taslak testler');
+ const test=$('manageTests')?.closest('.panel');
+ if(test&&!test.dataset.testOrganized){
+  test.dataset.testOrganized='true';
+  const title=test.querySelector('h3');if(title)title.textContent='🗂️ Test Yönetimi';
+  const makeGroup=(heading,open=false)=>{const fold=document.createElement('details');fold.className='teacher-fold';fold.open=open;const summary=document.createElement('summary');summary.textContent=heading;fold.append(summary);return fold};
+  const pdfGroup=makeGroup('📥 İndirilebilir Testler · PDF Yükle ve Yönet');
+  const onlineGroup=makeGroup('🧠 Online Test Hazırlığı · Test Oluştur',true);
+  const readyGroup=makeGroup('📚 Hazır Testler / Yüklenmiş Testler');
+  const pdfInput=$('testPdf'),pdfFile=$('testPdfFile'),manager=$('manageTests');
+  for(const input of [pdfInput,pdfFile]){const lab=input?.previousElementSibling;if(lab?.tagName==='LABEL')pdfGroup.append(lab);if(input)pdfGroup.append(input)}
+  const subtitle=document.createElement('p');subtitle.className='muted';subtitle.textContent='PDF dosyasını yükleyin veya PDF bağlantısı ekleyin. Test adı ve ders seçimini üstte yapın.';pdfGroup.prepend(subtitle);
+  const onlineIds=['previewDraftTest','draftTestPreview','testJson','testQuestions','saveOnlineTest'];
+  for(const id of onlineIds){const el=$(id);if(!el)continue;const lab=el.previousElementSibling;if(lab?.tagName==='LABEL')onlineGroup.append(lab);onlineGroup.append(el)}
+  const jsonHint=Array.from(test.querySelectorAll('p.muted')).find(el=>el.textContent.includes('JSON içeriği:'));if(jsonHint)onlineGroup.append(jsonHint);
+  if(manager)readyGroup.append(manager);
+  const msg=$('testMessage');
+  test.append(pdfGroup,onlineGroup,readyGroup);if(msg)test.append(msg);
+ }
+ const testHub=$('manageTests')?.closest('.panel');
+ if(testHub)foldElement(testHub,'🗂️ Test Yönetimi · Online ve İndirilebilir');
  const game=$('readyGames')?.closest('.panel');if(game)foldElement(game,'🎮 Oyunları yönet');
  const reports=$('teacherReports');if(reports){
   const print=document.createElement('button');print.type='button';print.className='alt';print.textContent='🖨️ Süleymaniye raporunu PDF kaydet';
