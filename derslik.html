@@ -165,7 +165,19 @@ function enhanceTeacherSections(root){
   const label=el.querySelector('h3,h2')?.textContent?.trim()||'Yönetim alanı';
   foldElement(el,label,n===6);
  }
- const video=$('partList')?.closest('.panel');if(video)foldElement(video,'🎬 Video Bölümü Yönetimi');
+ const video=$('partList')?.closest('.panel');
+ if(video){
+  foldElement(video,'🎬 Bölümlü Video Yönetimi');
+  const wrapper=video.parentElement;
+  if(wrapper?.tagName==='DETAILS')wrapper.open=false;
+ }
+ const trash=$('trashLessons')?.closest('.panel');
+ if(trash){
+  foldElement(trash,'🗑️ Çöp Kutusu · Geri Yükle');
+  const wrapper=trash.parentElement;
+  if(wrapper?.tagName==='DETAILS')wrapper.open=false;
+ }
+
  const lessons=$('teacherLessons');if(lessons){
   const parent=lessons.parentElement;
   const fold=document.createElement('details');fold.className='teacher-section';
