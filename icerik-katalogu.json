@@ -72,6 +72,24 @@
       }
     },
     {
+      "id": "fen-tehlike-radari-v1",
+      "kind": "game",
+      "subject": "Fen Bilimleri",
+      "title": "🐰 Tehlike Radarı – Tavşanı Koru",
+      "description": "10 görev · Yaklaşan uyaranı doğru duyu organıyla eşleştir. 10 saniyelik radar ve akıllı tahta modu.",
+      "learning_outcome": "FB.3.2.2",
+      "url": "tehlike-radari.html",
+      "version": 1,
+      "visibility": "shared",
+      "published": true,
+      "score_policy": {
+        "correct": 10,
+        "wrong": -1,
+        "max_wrong_per_question": 3,
+        "seconds_per_question": 10
+      }
+    },
+    {
       "id": "klasik-yuvarlama-koprusu-v1",
       "kind": "game",
       "subject": "Klasik Oyunlar",
