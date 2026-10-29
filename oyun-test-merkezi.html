@@ -14,6 +14,11 @@ async function loadGames(){
  for(const subject of subjects){
   const fold=document.createElement('details');fold.className='subject-fold';fold.open=subject==='Klasik Oyunlar';
   const head=document.createElement('summary');head.textContent=({'Türkçe':'📚','Matematik':'🧮','Fen Bilimleri':'🔬','Hayat Bilgisi':'🌱','Klasik Oyunlar':'🎲'}[subject])+' '+subject;fold.append(head);
+  if(subject==='Türkçe'){
+   const item=document.createElement('div');item.className='test-card';
+   const link=document.createElement('a');link.href='buyuk-harf-balonu.html';link.textContent='🎈 Büyük Harf Avı – Balon Patlatma · Oyunu başlat';link.style.cssText='display:inline-block;font-weight:900;font-size:19px;padding:12px 0';
+   const note=document.createElement('p');note.textContent='10 cümle · Büyük harfle yazılması gereken kelimeyi bul, balonu patlat! Dokunmatik tahtaya uygun.';item.append(link,note);fold.append(item);
+  }
   if(subject==='Klasik Oyunlar'){
    for(const entry of [{title:'🌉 Yuvarlama Köprüsü',href:'yuvarlama-koprusu.html'},{title:'📚 Eş ve Zıt Anlam Dedektifi',href:'bilgi-macerasi.html?oyun=turkce'}]){
     const item=document.createElement('div');item.className='test-card';const link=document.createElement('a');link.href=entry.href;link.textContent=entry.title+' · Oyna';item.append(link);fold.append(item)}
