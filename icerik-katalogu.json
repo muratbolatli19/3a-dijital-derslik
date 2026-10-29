@@ -201,6 +201,24 @@
         "medium": 4,
         "hard": 3
       }
+    },
+    {
+      "id": "hb-sagligimi-koruyorum-online-test-v1",
+      "kind": "online_test",
+      "subject": "Hayat Bilgisi",
+      "title": "Sağlığımı Koruyorum – Yeni Nesil Test 1",
+      "description": "10 soru · 3 kolay, 4 orta, 3 zor · Sağlıklı yaşam alışkanlıkları ve günlük yaşam kararları.",
+      "learning_outcome": "HB.3.2.1",
+      "version": 1,
+      "visibility": "shared",
+      "published": true,
+      "provider": "supabase-online-tests",
+      "provider_id": "4539486e-6066-4f20-9844-e238e195ccac",
+      "question_distribution": {
+        "easy": 3,
+        "medium": 4,
+        "hard": 3
+      }
     }
   ]
 }
