@@ -28,7 +28,7 @@ function buildButtons(){const host=$('senses');host.replaceChildren();senses.for
 function showTask(){stopTimer();locked=false;questionErrors=0;remaining=10;const t=order[index];$('warnIcon').textContent=t.icon;$('warnText').textContent=t.label;$('alert').style.animation='none';void $('alert').offsetWidth;$('alert').style.animation='approach 10s linear both';$('bunny').className='bunny';$('sceneLabel').textContent='Yaklaşan uyaranı algıla, Pofuduk’u koru!';$('feedback').textContent='';$('next').style.display='none';document.querySelectorAll('.sense').forEach(b=>b.classList.remove('correct','wrong'));setButtons(false);update();timer=setInterval(()=>{remaining--;update();if(remaining<=0){stopTimer();finishQuestion(false,'⏱️ Süre doldu! '+t.explain)}},1000)}
 function finishQuestion(ok,message){if(locked)return;locked=true;stopTimer();setButtons(true);$('alert').style.animationPlayState='paused';$('feedback').textContent=message;$('sceneLabel').textContent=ok?'🛡️ Kurtarıldı! Pofuduk güvende!':'🛡️ Uyarı durduruldu. Doğru cevabı öğrendik!';$('bunny').className='bunny '+(ok?'happy':'help');const correct=document.querySelector('.sense[data-id="'+order[index].sense+'"]');if(correct)correct.classList.add('correct');$('next').textContent=index===9?'🏆 Sonuçlar':'Sonraki görev ➜';$('next').style.display='inline-block';if(ok){$('alert').style.animation='retreat .7s ease-out forwards';starburst()}}
 function choose(id,button){if(locked||!playing)return;const t=order[index];if(id===t.sense){points+=10;success++;update();speak(index%2===0?'Tebrikler '+student+'! '+t.explain:'Harikasın '+student+'! '+t.explain);finishQuestion(true,'✅ +10 puan! '+t.explain)}else{errors++;questionErrors++;points=Math.max(0,points-1);update();button.classList.remove('wrong');void button.offsetWidth;button.classList.add('wrong');if(questionErrors>=3){speak('Üç deneme yapıldı '+student+'. '+t.explain);finishQuestion(false,'💡 Üç yanlış yapıldı. '+t.explain)}else{$('feedback').textContent='🔎 Tekrar dene '+student+'! Uyarı yaklaşıyor. −1 puan';speak(questionErrors===1?'Tekrar dene '+student+'.':'Bir daha düşün '+student+'.')}}}
-function finish(){stopTimer();playing=false;$('play').style.display='none';$('results').classList.add('show');$('final').textContent='⭐ '+points+'/100 puan · '+success+' doğru görev · '+errors+' yanlış dokunuş.';speak('Tebrikler '+student+'! Radar görevini tamamladın.')}
+function finish(){stopTimer();playing=false;$('play').style.display='none';$('results').classList.add('show');$('final').textContent='⭐ '+points+'/100 puan · '+success+' doğru görev · '+errors+' yanlış dokunuş.';speak('Tebrikler '+student+'! Radar görevini tamamladın.');window.lessonGameReward?.('complete')}
 $('start').onclick=()=>{playing=true;$('start').style.display='none';showTask()};
 $('next').onclick=()=>{index++;if(index>=order.length)finish();else showTask()};
 $('again').onclick=()=>{order=shuffle(tasks);index=0;points=0;errors=0;success=0;playing=true;$('play').style.display='';$('results').classList.remove('show');document.querySelectorAll('.sense').forEach(b=>b.classList.remove('correct','wrong'));showTask()};
@@ -38,4 +38,18 @@ $('full').onclick=async()=>{try{if(document.fullscreenElement)await document.exi
 document.addEventListener('fullscreenchange',()=>{$('full').textContent=document.fullscreenElement?'⛶ TAM EKRANDAN ÇIK':'⛶ TAM EKRAN'});
 (async()=>{try{const {createClient}=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/+esm');const db=createClient('https://zhmkyfouskthqgrhvhqp.supabase.co','sb_publishable_YcqB4BO9knYzHk4KKLye3A_ilBb6I9u');const {data:{user}}=await db.auth.getUser();if(!user)return;const {data}=await db.from('profiles').select('display_name,role,active').eq('id',user.id).maybeSingle();if(data?.role==='student'&&data.active)setName(data.display_name)}catch{}})();
 buildButtons();order=shuffle(tasks);setButtons(true);update();
+</script><script type="module">
+import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/+esm';
+const rewardDb=createClient('https://zhmkyfouskthqgrhvhqp.supabase.co','sb_publishable_YcqB4BO9knYzHk4KKLye3A_ilBb6I9u');
+const gameId="tehlike-radari";let rewardStarted=false;
+async function lessonGameReward(action){
+ const {data:{session}}=await rewardDb.auth.getSession();
+ if(!session){if(action==='complete')alert('Yıldız Ligi puanı için öğrenci hesabınızla giriş yapın.');return}
+ const r=await fetch('https://zhmkyfouskthqgrhvhqp.supabase.co/functions/v1/finish-lesson-game',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable_YcqB4BO9knYzHk4KKLye3A_ilBb6I9u','Content-Type':'application/json'},body:JSON.stringify({action,game_id:gameId})});
+ const j=await r.json();if(!r.ok)throw Error(j.error||'Kayıt başarısız');
+ if(action==='start')rewardStarted=true;
+ if(action==='complete')alert(j.already?'Bu oyun için 20 Yıldız Ligi puanı daha önce kaydedildi.':'✅ Yıldız Ligi hesabınıza 20 puan kaydedildi!');
+}
+window.lessonGameReward=(action)=>lessonGameReward(action).catch(e=>{if(action==='complete')alert('Yıldız Ligi puanı kaydedilemedi: '+e.message)});
+window.lessonGameReward('start');
 </script></body></html>
