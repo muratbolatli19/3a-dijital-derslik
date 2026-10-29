@@ -39,7 +39,7 @@ svg.addEventListener('pointercancel',()=>{drag=null;$('dragLine').style.display=
 $('wholeBtn').onclick=()=>{if(run[index].kind!=='whole')error('Bu görevde pizza parçalara ayrılmalı.');else validate()};
 $('resetBtn').onclick=()=>{axes=[];paint();$('feedback').textContent='Kesim sıfırlandı. Tekrar deneyebilirsin.'};
 $('checkBtn').onclick=validate;
-$('nextBtn').onclick=()=>{index++;if(index<run.length){display();return}const cut=timePenalty(),score=Math.max(0,points-cut);$('taskTitle').textContent='🍕 Pizza Ustası tamamlandı!';$('instruction').textContent='Başardın!';$('pizzaPieces').replaceChildren();$('hint').textContent='';$('nextBtn').style.display='none';$('results').classList.add('show');$('bar').style.width='100%';$('phase').textContent='Oyun sonu';$('feedback').textContent='⭐ Son puan: '+score+' / 100';$('finalStats').textContent=correctCount+' başarılı görev · '+totalErrors+' yanlış · '+cut+' süre kesintisi · '+Math.round((Date.now()-started)/1000)+' saniye';$('points').textContent='⭐ '+score+' puan';speak('Tebrikler '+studentName+'! Pizza Ustası oyununu tamamladın.')};
+$('nextBtn').onclick=()=>{index++;if(index<run.length){display();return}const cut=timePenalty(),score=Math.max(0,points-cut);$('taskTitle').textContent='🍕 Pizza Ustası tamamlandı!';$('instruction').textContent='Başardın!';$('pizzaPieces').replaceChildren();$('hint').textContent='';$('nextBtn').style.display='none';$('results').classList.add('show');$('bar').style.width='100%';$('phase').textContent='Oyun sonu';$('feedback').textContent='⭐ Son puan: '+score+' / 100';$('finalStats').textContent=correctCount+' başarılı görev · '+totalErrors+' yanlış · '+cut+' süre kesintisi · '+Math.round((Date.now()-started)/1000)+' saniye';$('points').textContent='⭐ '+score+' puan';speak('Tebrikler '+studentName+'! Pizza Ustası oyununu tamamladın.');window.lessonGameReward?.('complete')};
 $('again').onclick=()=>{index=0;points=0;totalErrors=0;correctCount=0;started=Date.now();run=shuffle(tasks);display()};
 $('soundBtn').onclick=()=>{soundOn=!soundOn;$('soundBtn').textContent=soundOn?'🔊 Ses açık':'🔇 Ses kapalı';if(!soundOn&&window.speechSynthesis)speechSynthesis.cancel()};
 $('nameBtn').onclick=()=>{const name=prompt('Sana nasıl seslenelim? Yalnızca adını yaz.',studentName==='arkadaşım'?'':studentName);if(name?.trim())setName(name)};
@@ -48,4 +48,18 @@ $('fullBtn').onclick=async()=>{try{if(document.fullscreenElement)await document.
 document.addEventListener('fullscreenchange',()=>{$('fullBtn').textContent=document.fullscreenElement?'⛶ TAM EKRANDAN ÇIK':'⛶ TAM EKRAN'});
 (async()=>{try{const {createClient}=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/+esm');const db=createClient('https://zhmkyfouskthqgrhvhqp.supabase.co','sb_publishable_YcqB4BO9knYzHk4KKLye3A_ilBb6I9u');const {data:{user}}=await db.auth.getUser();if(!user)return;const {data}=await db.from('profiles').select('display_name,role,active').eq('id',user.id).maybeSingle();if(data?.role==='student'&&data.active&&data.display_name)setName(data.display_name)}catch{}})();
 run=shuffle(tasks);display();
+</script><script type="module">
+import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/+esm';
+const rewardDb=createClient('https://zhmkyfouskthqgrhvhqp.supabase.co','sb_publishable_YcqB4BO9knYzHk4KKLye3A_ilBb6I9u');
+const gameId="pizza-ustasi";let rewardStarted=false;
+async function lessonGameReward(action){
+ const {data:{session}}=await rewardDb.auth.getSession();
+ if(!session){if(action==='complete')alert('Yıldız Ligi puanı için öğrenci hesabınızla giriş yapın.');return}
+ const r=await fetch('https://zhmkyfouskthqgrhvhqp.supabase.co/functions/v1/finish-lesson-game',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable_YcqB4BO9knYzHk4KKLye3A_ilBb6I9u','Content-Type':'application/json'},body:JSON.stringify({action,game_id:gameId})});
+ const j=await r.json();if(!r.ok)throw Error(j.error||'Kayıt başarısız');
+ if(action==='start')rewardStarted=true;
+ if(action==='complete')alert(j.already?'Bu oyun için 20 Yıldız Ligi puanı daha önce kaydedildi.':'✅ Yıldız Ligi hesabınıza 20 puan kaydedildi!');
+}
+window.lessonGameReward=(action)=>lessonGameReward(action).catch(e=>{if(action==='complete')alert('Yıldız Ligi puanı kaydedilemedi: '+e.message)});
+window.lessonGameReward('start');
 </script></body></html>
