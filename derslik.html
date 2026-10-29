@@ -38,6 +38,17 @@ button.danger{background:#b72e55;box-shadow:0 4px 0 #7a1737;color:white}button.d
 .welcome-hero #logout{flex-shrink:0;background:#fff!important;border:1px solid #d0d7f4!important;color:#343c91!important;box-shadow:0 3px 0 #cad0e8!important}
 #main{background:linear-gradient(165deg,#fff,#fefeff 70%,#f7f8ff)!important}
 @media(max-width:700px){.welcome-hero{padding:17px!important;min-height:120px!important;gap:8px!important;flex-wrap:wrap}.welcome-intro{gap:8px}.welcome-mark{width:88px;max-width:24%}.welcome-hero #greeting{font-size:23px!important}.welcome-hero #role{font-size:15px!important}.welcome-hero #logout{margin-left:auto;padding:8px 12px}.brand-copy h1{font-size:22px!important}.brand-copy p{font-size:11px!important}}
+
+/* 2026 kompakt karşılama: ilk ekranda daha fazla panel */
+body:has(#main:not(.hidden)) .wrap{margin-top:9px!important}
+#main{padding:12px!important;margin-top:0!important}
+.welcome-hero{min-height:100px!important;padding:10px 22px!important;margin-bottom:12px!important;border-radius:19px!important;gap:11px!important}
+.welcome-hero #greeting{font-size:clamp(23px,2.4vw,32px)!important;margin:0 0 2px!important;line-height:1.12!important}
+.welcome-hero #role{font-size:clamp(14px,1.35vw,17px)!important}
+.welcome-mark{width:112px!important;max-height:85px!important}
+.welcome-hero #logout{padding:8px 12px!important;font-size:14px!important}
+.welcome-hero:before{top:5px!important;font-size:17px!important}
+@media(max-width:700px){#main{padding:9px!important}.welcome-hero{min-height:86px!important;padding:8px 11px!important;gap:6px!important;margin-bottom:9px!important}.welcome-mark{width:73px!important;max-height:65px!important}.welcome-hero #greeting{font-size:20px!important}.welcome-hero #role{font-size:13px!important}}
 </style>
 </head><body><header class="brand-header"><div class="brand-copy"><h1>Dijital Derslik</h1><p>Öğren · Keşfet · Başar</p></div><img src="dijital-derslik-yeni-amblem.png" onerror="this.onerror=null;this.src='dijital-derslik-logo-seffaf.png'" alt="Süleymaniye Okulları Dijital Derslik" class="brand-logo"></header>
 <main class="wrap">
