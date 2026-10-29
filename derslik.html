@@ -641,7 +641,8 @@ async function studentView(){
   db.from('lessons').select('id,title,subject,explanation,week_start,video_url').eq('published',true).is('deleted_at',null).order('week_start',{ascending:false}),
   db.from('activities').select('id,lesson_id').is('deleted_at',null),
   db.from('lesson_video_parts').select('lesson_id'),
-  db.from('progress').select('activity_id,status').eq('student_id',me.id).eq('status','completed')
+  db.from('progress').select('activity_id,status').eq('student_id',me.id).eq('status','completed'),
+  db.from('learning_awards').select('lesson_id,kind,part_key,points').eq('student_id',me.id)
  ]);
  const [,lessonsResponse,activityResponse,videoResponse,progressResponse,awardResponse]=result;
  const {data,error}=lessonsResponse;
