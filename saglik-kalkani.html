@@ -24,7 +24,7 @@ function tabs(){const root=$('tabs');root.replaceChildren();rooms.forEach((r,i)=
 function openQuestion(t){active=t;wrongCount=0;$('question').textContent=t.question;$('modalIcon').textContent=t.bad;$('message').textContent='Sağlıklı davranışı seç.';$('close').style.display='';const choices=$('choices');choices.replaceChildren();t.options.forEach((option,i)=>{const b=document.createElement('button');b.textContent=option;b.onclick=()=>answer(i);choices.append(b)});$('dialog').classList.add('show')}
 function answer(i){if(!active||completed.has(active.id))return;const t=active;if(i!==t.answer){errors++;score=Math.max(0,score-1);wrongCount++;update();if(wrongCount>=3){const bs=[...$('choices').children];bs.forEach(b=>b.disabled=true);bs[t.answer].style.background='#d5ffeb';$('message').textContent='💡 Doğrusu: '+t.options[t.answer]+'. '+t.explain+' Bu görevden puan kazanılmadı.';speak('Doğru davranışı öğrenelim '+student+'. '+t.explain);complete(t,false)}else{$('message').textContent='🔎 Tekrar dene '+student+'. −1 puan';speak('Tekrar dene '+student)}return}score+=10;update();$('message').textContent='✅ +10 puan! '+t.explain;speak('Tebrikler '+student+'! '+t.explain);complete(t,true)}
 function complete(t,earned){completed.add(t.id);const bs=[...$('choices').children];bs.forEach((b,i)=>{b.disabled=true;if(i===t.answer)b.style.background='#d5ffeb'});$('modalIcon').textContent=t.good;draw();update();$('close').textContent='✅ Odaya dön';if(completed.size===10){setTimeout(()=>{if($('dialog').classList.contains('show'))return;finish()},0)}}
-function finish(){$('playing').style.display='none';$('tabs').style.display='none';$('shield').style.display='none';$('results').classList.add('show');$('final').textContent='⭐ '+score+'/100 puan · '+completed.size+' sağlık alışkanlığı öğrenildi · '+errors+' yanlış seçim.';speak('Tebrikler '+student+'! Sağlık kalkanını tamamladın.')}
+function finish(){$('playing').style.display='none';$('tabs').style.display='none';$('shield').style.display='none';$('results').classList.add('show');$('final').textContent='⭐ '+score+'/100 puan · '+completed.size+' sağlık alışkanlığı öğrenildi · '+errors+' yanlış seçim.';speak('Tebrikler '+student+'! Sağlık kalkanını tamamladın.');window.lessonGameReward?.('complete')}
 $('close').onclick=()=>{$('dialog').classList.remove('show');active=null;wrongCount=0;$('close').textContent='Odaya dön';if(completed.size===10)finish()};
 $('again').onclick=()=>{completed=new Set();score=0;errors=0;roomIndex=0;started=Date.now();$('results').classList.remove('show');$('playing').style.display='';$('tabs').style.display='grid';$('shield').style.display='flex';update();draw()};
 $('nameBtn').onclick=()=>{const v=prompt('Sana nasıl seslenelim?',student==='arkadaşım'?'':student);if(v?.trim())setName(v)};
@@ -34,4 +34,18 @@ document.addEventListener('fullscreenchange',()=>{$('full').textContent=document
 setInterval(()=>{const sec=Math.floor((Date.now()-started)/1000);$('elapsed').textContent='⏱️ '+String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0')},1000);
 (async()=>{try{const {createClient}=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/+esm');const db=createClient('https://zhmkyfouskthqgrhvhqp.supabase.co','sb_publishable_YcqB4BO9knYzHk4KKLye3A_ilBb6I9u');const {data:{user}}=await db.auth.getUser();if(!user)return;const {data}=await db.from('profiles').select('display_name,role,active').eq('id',user.id).maybeSingle();if(data?.role==='student'&&data.active)setName(data.display_name)}catch{}})();
 tabs();update();draw();
+</script><script type="module">
+import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/+esm';
+const rewardDb=createClient('https://zhmkyfouskthqgrhvhqp.supabase.co','sb_publishable_YcqB4BO9knYzHk4KKLye3A_ilBb6I9u');
+const gameId="saglik-kalkani";let rewardStarted=false;
+async function lessonGameReward(action){
+ const {data:{session}}=await rewardDb.auth.getSession();
+ if(!session){if(action==='complete')alert('Yıldız Ligi puanı için öğrenci hesabınızla giriş yapın.');return}
+ const r=await fetch('https://zhmkyfouskthqgrhvhqp.supabase.co/functions/v1/finish-lesson-game',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable_YcqB4BO9knYzHk4KKLye3A_ilBb6I9u','Content-Type':'application/json'},body:JSON.stringify({action,game_id:gameId})});
+ const j=await r.json();if(!r.ok)throw Error(j.error||'Kayıt başarısız');
+ if(action==='start')rewardStarted=true;
+ if(action==='complete')alert(j.already?'Bu oyun için 20 Yıldız Ligi puanı daha önce kaydedildi.':'✅ Yıldız Ligi hesabınıza 20 puan kaydedildi!');
+}
+window.lessonGameReward=(action)=>lessonGameReward(action).catch(e=>{if(action==='complete')alert('Yıldız Ligi puanı kaydedilemedi: '+e.message)});
+window.lessonGameReward('start');
 </script></body></html>
