@@ -165,6 +165,24 @@
         "medium": 4,
         "hard": 3
       }
+    },
+    {
+      "id": "mat-butun-yarim-ceyrek-online-test-v1",
+      "kind": "online_test",
+      "subject": "Matematik",
+      "title": "Bütün, Yarım ve Çeyrek – Yeni Nesil Test 1",
+      "description": "10 soru · 3 kolay, 4 orta, 3 zor · Eş parçalar, modeller ve günlük yaşam problemleri.",
+      "learning_outcome": "MAT.3.1.9",
+      "version": 1,
+      "visibility": "shared",
+      "published": true,
+      "provider": "supabase-online-tests",
+      "provider_id": "604bd780-7d1f-4f1f-badf-f11bce4f36b1",
+      "question_distribution": {
+        "easy": 3,
+        "medium": 4,
+        "hard": 3
+      }
     }
   ]
 }
