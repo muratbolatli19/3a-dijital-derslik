@@ -444,21 +444,33 @@ $('saveOnlineTest').onclick=async()=>{
 };
 async function manageReadyGames(){
  const {data,error}=await db.from('class_games').select('id,title,published');
- if(error){$('readyGames').textContent=error.message;return}
- $('readyGames').replaceChildren();
+ const root=$('readyGames');if(error){root.textContent=error.message;return}
+ root.replaceChildren();
+ const games={
+  'yuvarlama-koprusu':{subject:'Matematik',url:'yuvarlama-koprusu.html'},
+  'pizza-ustasi':{subject:'Matematik',url:'pizza-ustasi.html'},
+  'buyuk-harf-balonu':{subject:'Türkçe',url:'buyuk-harf-balonu.html'},
+  'tehlike-radari':{subject:'Fen Bilimleri',url:'tehlike-radari.html'},
+  'saglik-kalkani':{subject:'Hayat Bilgisi',url:'saglik-kalkani.html'}
+ };
+ const grouped=new Map();
+ for(const subject of ['Türkçe','Matematik','Fen Bilimleri','Hayat Bilgisi'])grouped.set(subject,[]);
  for(const game of data||[]){
-  const div=document.createElement('div');div.className='panel';const title=document.createElement('strong');title.textContent=game.title+' · '+(game.published?'Yayında':'Taslak');div.append(title); const subject=document.createElement('small');subject.textContent=' · Matematik';div.append(subject);
-  const test=document.createElement('a');test.href='yuvarlama-koprusu.html?preview=1';test.target='_blank';test.rel='noopener noreferrer';test.textContent=' 👁 Önizle ';div.append(test);
+  const config=games[game.id]||{subject:'Diğer Oyunlar',url:null};
+  if(!grouped.has(config.subject))grouped.set(config.subject,[]);
+  const div=document.createElement('div');div.className='panel';
+  const title=document.createElement('strong');title.textContent=game.title+' · '+(game.published?'Yayında':'Taslak');div.append(title);
+  const subjectLabel=document.createElement('small');subjectLabel.textContent=' · '+config.subject;div.append(subjectLabel);
+  if(config.url){const test=document.createElement('a');test.href=config.url+'?preview=1';test.target='_blank';test.rel='noopener noreferrer';test.textContent=' 👁 Önizle ';div.append(test)}
   const b=document.createElement('button');b.type='button';b.textContent=game.published?'Yayından kaldır':'Öğrencilere yayınla';
-  b.onclick=async()=>{if(!window.confirm('Oyun yayın durumu değiştirilsin mi?'))return;const {error}=await db.from('class_games').update({published:!game.published}).eq('id',game.id);if(error)msg(error.message);else manageReadyGames()};div.append(b);$('readyGames').append(div);
+  b.onclick=async()=>{if(!window.confirm('Oyun yayın durumu değiştirilsin mi?'))return;const {error}=await db.from('class_games').update({published:!game.published}).eq('id',game.id);if(error)msg(error.message);else manageReadyGames()};div.append(b);
+  grouped.get(config.subject).push(div);
  }
- const original=Array.from($('readyGames').children);
- for(const subject of ['Türkçe','Matematik','Fen Bilimleri','Hayat Bilgisi']){
-  const fold=document.createElement('details');fold.className='teacher-section';const sum=document.createElement('summary');
-  sum.textContent=(subject==='Matematik'?'🧮 ':subject==='Türkçe'?'📚 ':subject==='Fen Bilimleri'?'🔬 ':'🌱 ')+subject;fold.append(sum);
-  if(subject==='Matematik')for(const card of original)fold.append(card);
-  if(!fold.querySelector('.panel')){const empty=document.createElement('p');empty.textContent='Bu ders için henüz oyun yayınlanmadı.';empty.style.padding='12px';fold.append(empty)}
-  $('readyGames').append(fold);
+ for(const [subject,cards] of grouped){
+  const fold=document.createElement('details');fold.className='teacher-section';fold.open=subject==='Matematik';
+  const sum=document.createElement('summary');sum.textContent=({'Türkçe':'📚 ','Matematik':'🧮 ','Fen Bilimleri':'🔬 ','Hayat Bilgisi':'🌱 ','Diğer Oyunlar':'🎲 '}[subject]||'🎮 ')+subject+' · '+cards.length+' oyun';fold.append(sum);
+  if(cards.length){for(const card of cards)fold.append(card)}else{const empty=document.createElement('p');empty.textContent='Bu ders için henüz oyun yayınlanmadı.';empty.style.padding='12px';fold.append(empty)}
+  root.append(fold);
  }
 }
 async function showSystemHealth(){
