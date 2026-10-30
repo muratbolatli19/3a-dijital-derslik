@@ -446,6 +446,7 @@ async function manageReadyGames(){
  const {data,error}=await db.from('class_games').select('id,title,published');
  const root=$('readyGames');if(error){root.textContent=error.message;return}
  root.replaceChildren();
+ const version=document.createElement('p');version.className='muted';version.textContent='✅ Oyunların derslere göre dağılımı · Güncel sürüm 30.10.2026 / 2';root.append(version);
  const games={
   'yuvarlama-koprusu':{subject:'Matematik',url:'yuvarlama-koprusu.html'},
   'pizza-ustasi':{subject:'Matematik',url:'pizza-ustasi.html'},
@@ -456,7 +457,9 @@ async function manageReadyGames(){
  const grouped=new Map();
  for(const subject of ['Türkçe','Matematik','Fen Bilimleri','Hayat Bilgisi'])grouped.set(subject,[]);
  for(const game of data||[]){
-  const config=games[game.id]||{subject:'Diğer Oyunlar',url:null};
+  const normalized=String(game.title||'').toLocaleLowerCase('tr-TR');
+  const fallback=normalized.includes('büyük harf')?games['buyuk-harf-balonu']:normalized.includes('pizza')?games['pizza-ustasi']:normalized.includes('tehlike')?games['tehlike-radari']:normalized.includes('sağlık')?games['saglik-kalkani']:normalized.includes('yuvarlama')?games['yuvarlama-koprusu']:null;
+  const config=games[game.id]||fallback||{subject:'Diğer Oyunlar',url:null};
   if(!grouped.has(config.subject))grouped.set(config.subject,[]);
   const div=document.createElement('div');div.className='panel';
   const title=document.createElement('strong');title.textContent=game.title+' · '+(game.published?'Yayında':'Taslak');div.append(title);
