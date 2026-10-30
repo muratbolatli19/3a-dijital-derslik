@@ -40,6 +40,17 @@ main{position:relative;max-width:1060px;margin:auto;padding:16px}.top{display:fl
 @keyframes rocketFall{to{transform:translate(-15%,160%) rotate(140deg) scale(.55);opacity:.35}}
 .flight-stage .planet{position:absolute;z-index:0;opacity:.55;pointer-events:none}
 @media(max-width:650px){.flight-stage{height:320px}.flight-gates{width:39%;right:3%}.flight-gates .portal{font-size:14px;padding:2px}.flight-stage .ship{font-size:50px}}
+</style><style id="v4-layout">
+/* Yerleşim kilidi: kelime kapıları sadece uçuş sahnesinin SAĞ içindedir. */
+#flightSky.flight-stage{display:block!important;position:relative!important;width:100%!important;height:440px!important;overflow:hidden!important}
+#flightSky #portals.flight-gates{position:absolute!important;display:flex!important;flex-direction:column!important;grid-template-columns:none!important;top:8px!important;bottom:8px!important;right:2%!important;left:auto!important;width:34%!important;height:auto!important;margin:0!important;padding:0!important;gap:8px!important;z-index:3!important}
+#flightSky #portals .portal{display:flex!important;flex:1 1 0!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;min-height:0!important;width:100%!important;margin:0!important;padding:4px!important;border-radius:24px!important;font-size:clamp(17px,2.3vw,26px)!important}
+#flightSky #ship.ship{position:absolute!important;left:4%;top:50%;z-index:5!important;margin:0!important;transform:translateY(-50%);font-size:75px!important}
+#flightSky #ship.ship.flying{transition:left 1.6s linear,top .9s ease-in-out!important;animation:none!important}
+#flightSky #ship.ship.crashed{animation:rocketFall .9s ease-in forwards!important}
+#flightSky .planet{pointer-events:none}
+#flightSky .flight-gates .portal em{font-size:22px!important}
+@media(max-width:650px){#flightSky.flight-stage{height:365px!important}#flightSky #portals.flight-gates{width:42%!important;right:2%!important}#flightSky #ship.ship{font-size:52px!important}}
 </style></head><body><main><div class="top"><a href="derslik.html">← Dijital Derslik</a><button id="sound">🔊 Ses açık</button></div><div class="head"><h1>🚀 Eş Anlamlı Kelime Galaksisi</h1><p>🌟 Eş Anlam Avcıları · 3. Sınıf Uzay Görevi</p></div><div class="stats"><span id="player">👩‍🚀 Oyuncu: Arkadaşım</span><span id="count">🎯 1 / 10</span><span id="points">⭐ 0 / 100</span><span id="timer">⏱️ 00:00</span></div><div class="arena" id="arena"><div class="word"><small>EŞ ANLAMLI KELİMEYİ BUL</small><strong id="question">Hazır mısın?</strong></div><div class="flight-stage" id="flightSky"><div class="track-lines"></div><span class="planet one">🪐</span><span class="planet two">🌍</span><span id="ship" class="ship">🚀</span><div class="flight-gates" id="portals"></div></div><div class="info" id="feedback" aria-live="polite">Doğru ışıklı geçidi seç!</div><div class="bar"><div id="fill" class="fill"></div></div><div class="actions"><button class="primary" id="next" disabled>Sonraki gezegene geç →</button></div></div><div id="result" class="result hidden" aria-live="polite"><h2>🏆 Galaksi Görevi Tamamlandı!</h2><p id="final"></p><p id="saveStatus">Puan kaydı hazırlanıyor...</p><button class="primary" id="again">↻ Yeniden oyna</button></div><p class="note">Oyun puanının %20'si ilk tamamlamada Yıldız Ligi'ne eklenir. Tekrar oynayarak pratik yapabilirsin. Klavyede 1, 2, 3 ile geçit seçebilirsin.</p></main>
 <script type="module">
 import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/+esm';
@@ -59,7 +70,7 @@ function pick(i){
  $('points').textContent='⭐ '+score+' / 100';$('next').disabled=true;$('feedback').textContent='🚀 Roket seçilen kapıya doğru uçuyor...';
  ship.classList.remove('crashed');ship.classList.add('flying');
  const gateCenter=target.offsetTop+target.offsetHeight/2;
- ship.style.top=gateCenter+'px';ship.style.left='67%';
+ ship.style.top=gateCenter+'px';ship.style.left='59%';
  speak(correct?'Doğru kapıya gidiyoruz!':'Dikkat, kapı kapalı!');
  setTimeout(()=>{
   if(correct){target.classList.add('open-gate');ship.style.left='112%';$('feedback').textContent='✨ Kapı açıldı! '+task[1][task[2]]+' doğru cevap.';speak('Tebrikler! Kapıdan geçtin!')}
