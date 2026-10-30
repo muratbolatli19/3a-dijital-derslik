@@ -146,7 +146,7 @@
       "url": "bilgi-macerasi.html?oyun=turkce",
       "version": 1,
       "visibility": "shared",
-      "published": true
+      "published": false
     },
     {
       "id": "tr-buyuk-harf-online-test-v1",
