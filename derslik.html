@@ -333,14 +333,24 @@ $('teacher').classList.toggle('hidden',p.role!=='teacher');$('student').classLis
 setupDashboardNavigation(p.role==='teacher'?'teacher':'student');
 if(p.role==='teacher'){await teacherView();await showWeeklyOverview();await loadStudentResetList()}else await studentView()
 }
-const studentLoginRoster=[["Demo Öğrenci","1001"],["Gülru Yağmur Bolatlı","1002"],["ABDURRAHMAN HAMZA ÇETİN","3004"],["AHMET EMİR AYDIN","3003"],["AHMET SELİM EKİCİ","3018"],["AMİNE BERRA İNCETEKİN","3019"],["ELİF KARAHAN","3005"],["EYMEN EROL","3006"],["FERHAT ENVER ÜSTÜNDAĞ","3007"],["FERİHA ÖZAT","3008"],["GÖRKEM ENES PEKTANE","3009"],["HALİL İBRAHİM ÇALIŞICI","3010"],["HÜMEYRA OKUR","3001"],["İBRAHİM KEREM ERCAN","3011"],["KÜRŞAD HAMZA YILMAZBAŞ","3012"],["MİRA ÖZTÜRK","3002"],["NECATİ ARAS KIZILARSLAN","3013"],["ÖMER ASAF KESKİN","3017"],["ÖMER YİĞİT KAYA","3016"],["SARE KESKİN","3015"],["ŞERİFE GÜLŞADE ÇELİK","3014"]];
 const picker=$('studentSelect');
-for(const [name,code] of studentLoginRoster){const option=document.createElement('option');option.textContent=name;option.value=code;picker.append(option)}
+async function loadStudentLoginDirectory(){
+ const previous=picker.value;
+ picker.replaceChildren(new Option('Öğrenciler yükleniyor...',''));
+ picker.disabled=true;
+ const {data,error}=await db.rpc('student_login_directory');
+ picker.replaceChildren(new Option(error?'Öğrenci listesi alınamadı · Tekrar deneyin':'Öğrenciyi seçin',''));
+ if(error){picker.disabled=false;msg('Öğrenci listesi yüklenemedi: '+error.message);return}
+ for(const student of data||[]){picker.add(new Option(student.display_name,student.student_code))}
+ picker.disabled=false;
+ if((data||[]).some(x=>x.student_code===previous))picker.value=previous;
+}
+loadStudentLoginDirectory();
 let loginMode='teacher';
 function studentPasswordStep(show){$('passwordField').classList.toggle('hidden',!show);$('password').required=show;}
 
 $('chooseTeacher').onclick=()=>{loginMode='teacher';studentPasswordStep(true);$('reset').classList.remove('hidden');$('studentPicker').classList.add('hidden');$('loginLabel').textContent='Öğretmen e-postası';$('email').placeholder='Öğretmen e-postanız';$('email').value='';$('loginHint').textContent='Mevcut öğretmen hesabınızla giriş yapın.';$('email').focus()};
-$('chooseStudent').onclick=()=>{loginMode='student';studentPasswordStep(false);$('reset').classList.add('hidden');$('studentPicker').classList.remove('hidden');$('loginLabel').textContent='Öğrenci kodu';$('email').placeholder='Size verilen 4 haneli öğrenci kodu';$('email').value='';$('loginHint').textContent='Önce adınızı seçip kodunuzu girin. Bu cihazda geçerli oturum yoksa hesap şifreniz istenir.';picker.focus()};
+$('chooseStudent').onclick=()=>{loadStudentLoginDirectory();loginMode='student';studentPasswordStep(false);$('reset').classList.add('hidden');$('studentPicker').classList.remove('hidden');$('loginLabel').textContent='Öğrenci kodu';$('email').placeholder='Size verilen 4 haneli öğrenci kodu';$('email').value='';$('loginHint').textContent='Önce adınızı seçip kodunuzu girin. Bu cihazda geçerli oturum yoksa hesap şifreniz istenir.';picker.focus()};
 picker.onchange=()=>{studentPasswordStep(false);msg('');$('email').value='';$('password').value='';$('email').focus()};
 $('signin').onclick=async()=>{
  const identity=$('email').value.trim(),pass=$('password').value;
