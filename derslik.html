@@ -202,9 +202,8 @@ function enhanceTeacherSections(root){
  if(root.dataset.sectionsEnhanced)return;
  const children=Array.from(root.children);
  // Keep every original top-level section in its original menu position.
- for(const n of [1,2,3,4,6,7,9]){
+ for(const n of [1,2,3,5,6]){
   const el=children[n];if(!el)continue;
-  if(n===9)continue;
   const label=el.querySelector('h3,h2')?.textContent?.trim()||'Yönetim alanı';
   foldElement(el,label,n===6);
  }
