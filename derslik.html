@@ -357,7 +357,7 @@ $('signin').onclick=async()=>{
  const isCode=/^\d{4,8}$/.test(identity);
  if(loginMode==='student'&&!isCode)return msg('Öğrenci kullanıcı adı 4–8 haneli numara olmalıdır.');
  if(loginMode==='teacher'&&isCode)return msg('Öğretmen girişi için e-posta adresinizi yazın.');
- if(loginMode==='teacher'&&!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(identity))return msg('Geçerli öğretmen e-posta adresini girin.');
+ if(loginMode==='teacher'&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identity))return msg('Geçerli öğretmen e-posta adresini girin.');
  if(!pass)return msg('Hesap şifresini girin.');
  const button=$('signin');button.disabled=true;msg('Giriş kontrol ediliyor...');
  try{
