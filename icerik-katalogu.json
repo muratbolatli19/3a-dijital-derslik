@@ -236,11 +236,11 @@
       "id": "tr-noktalama-dedektifleri-v1",
       "kind": "game",
       "subject": "Türkçe",
-      "title": "🔎 Noktalama Dedektifleri",
+      "title": "🏹 Noktalama Dedektifleri – Hedefi Vur!",
       "description": "30 görev · İşaret Avcısı ve Cümle Dedektifi",
       "learning_outcome": "Noktalama İşaretleri",
-      "url": "noktalama-dedektifleri.html",
-      "version": 1,
+      "url": "noktalama-okculuk.html",
+      "version": 2,
       "visibility": "shared",
       "published": true
     }
