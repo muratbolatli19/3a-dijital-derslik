@@ -419,10 +419,10 @@ $('signin').onclick=async()=>{
  try{
  const email=isCode?identity+'@student.3a.invalid':identity;
  const {data,error}=await db.auth.signInWithPassword({email,password:pass});
- if(error){msg(loginMode==='student'?'Bu öğrenci için mevcut hesap şifresi kabul edilmedi. Öğrenci kodu değişmedi. Öğretmen, Supabase Auth yönetiminden bu hesabın şifresini güvenli biçimde yenilemelidir.':'Öğretmen e-postası veya şifresi doğrulanamadı.');return}
+ if(error){const detail=error.code==='invalid_credentials'?'E-posta veya şifre eşleşmedi. Yeni belirlediğiniz şifreyi kullanın.':error.code==='email_not_confirmed'?'E-posta henüz doğrulanmamış.':error.status===429?'Çok sayıda giriş denemesi yapıldı. Bir süre sonra yeniden deneyin.':'Giriş hatası: '+error.message;msg(loginMode==='student'?'Bu öğrenci için mevcut hesap şifresi kabul edilmedi. Öğrenci kodu değişmedi. Öğretmen, Supabase Auth yönetiminden bu hesabın şifresini güvenli biçimde yenilemelidir.':detail);return}
  const {data:p,error:perror}=await db.from('profiles').select('role,active').eq('id',data.user.id).maybeSingle();
  if(perror||!p?.active||p.role!==(isCode?'student':'teacher')){await db.auth.signOut();msg('Hesap türü veya erişim yetkisi doğrulanamadı. Doğru giriş seçeneğini kullanın.');return}
- $('password').value='';msg('');await refresh();
+ $('password').value='';msg('Giriş doğrulandı, öğretmen paneli açılıyor...');try{await refresh();if(!$('main').classList.contains('hidden')&&profile?.role==='teacher')msg('Öğretmen girişi başarılı.');else if(profile?.role!=='teacher'&&!isCode)msg('Oturum açıldı ancak öğretmen paneli gösterilemedi. Lütfen sayfayı yenileyin.')}catch(openError){msg('Giriş başarılı ancak panel yüklenirken hata oluştu: '+openError.message)}
  }catch(e){msg('Bağlantı veya oturum hatası: '+e.message)}finally{button.disabled=false}
 };
 $('signup').onclick=async()=>{if($('password').value.length<12){msg('Şifre en az 12 karakter olmalıdır.');return}const {error}=await db.auth.signUp({email:$('email').value.trim(),password:$('password').value});msg(error?error.message:'Hesap isteği alındı. E-posta doğrulamasını yapın; öğretmen yetkisi ayrıca tanımlanmalıdır.')};
