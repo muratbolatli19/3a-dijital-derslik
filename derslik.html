@@ -838,10 +838,9 @@ async function studentView(){
  for(const l of data||[]){const week=l.week_start||'Tarih belirtilmemiş';if(!weeks.has(week))weeks.set(week,[]);weeks.get(week).push(l)}
  let weekIndex=0;
  const subjectIcons={'Türkçe':'📚','Matematik':'🧮','Fen Bilimleri':'🔬','Hayat Bilgisi':'🌱'};
- for(const [week,lessons] of weeks){
-  if(week===currentWeek){weekIndex++;continue}
-  const panel=document.createElement('details');panel.className='week-group';panel.open=false;
-  const heading=document.createElement('summary');heading.textContent='🗓️ Önceki Hafta · '+week+' · '+lessons.length+' ders';panel.append(heading);
+ for(const [week,lessons] of [...weeks].sort((a,b)=>b[0].localeCompare(a[0]))){
+  const panel=document.createElement('details');panel.className='week-group';panel.open=weekIndex===0;
+  const heading=document.createElement('summary');heading.textContent=(weekIndex===0?'🗓️ Son yayınlanan hafta · ':'🗓️ Önceki hafta · ')+week+' · '+lessons.length+' ders';panel.append(heading);
   const group=document.createElement('div');group.className='week-lessons';panel.append(group);root.append(panel);
   const weekAssigned=lessons.flatMap(l=>(activityResponse.data||[]).filter(a=>a.lesson_id===l.id));const weekFinished=weekAssigned.filter(a=>done.has(a.id)).length;
   const weekSummary=document.createElement('p');weekSummary.className='archive-week-summary';weekSummary.textContent=progressResponse.error?'İlerleme bilgisi alınamadı':weekAssigned.length?'🎯 Haftalık etkinlikler: '+weekFinished+'/'+weekAssigned.length+' tamamlandı':'📘 Bu haftada etkinlik bulunmuyor';panel.insertBefore(weekSummary,group);
