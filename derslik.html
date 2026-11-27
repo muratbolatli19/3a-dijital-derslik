@@ -1022,11 +1022,22 @@ $('weeklySave').onclick=async()=>{
  document.querySelectorAll('[data-lesson]').forEach(el=>parsedWeek[Number(el.dataset.lesson)].outcome=el.value.trim());
  if(parsedWeek.some(x=>!x.outcome))return msg('Dört dersin öğrenme çıktısını doldurun. Eksik veya yanlış ders kazanımlarını kaydetmeyin.');
  for(let i=1;i<4;i++){if(looksWrong(i,parsedWeek[i].outcome))return msg(parsedWeek[i].subject+' için farklı derse ait bir kazanım kodu bulundu. Lütfen ilgili dersin gerçek kazanımını girin.');}
- const {data:existing,error:readError}=await db.from('lessons').select('subject').eq('week_start',parsedWeek[0].week_start);
+ const {data:existing,error:readError}=await db.from('lessons').select('id,subject,outcome,published').eq('week_start',parsedWeek[0].week_start).is('deleted_at',null);
  if(readError)return msg(readError.message);
+ // Yalnızca daha önce yanlış ders koduyla kaydedilmiş, yayında olmayan taslakları düzelt.
+ let fixedDrafts=0;
+ for(const item of existing||[]){
+  const idx=['Türkçe','Matematik','Fen Bilimleri','Hayat Bilgisi'].indexOf(item.subject);
+  if(idx<=0||item.published||!looksWrong(idx,item.outcome))continue;
+  const replacement=parsedWeek[idx]?.outcome;
+  if(!replacement||looksWrong(idx,replacement))continue;
+  const {error:fixError}=await db.from('lessons').update({outcome:replacement,title:replacement.slice(0,100),explanation:replacement}).eq('id',item.id).eq('published',false);
+  if(fixError)return msg('Yanlış kaydedilen '+item.subject+' taslağı düzeltilemedi: '+fixError.message);
+  fixedDrafts++;
+ }
  const done=new Set((existing||[]).map(x=>x.subject));
  const payload=parsedWeek.filter(x=>!done.has(x.subject)).map(x=>({...x,title:x.outcome.slice(0,100),explanation:x.outcome,author_id:me.id,published:false}));
- if(!payload.length){try{const result=await generateForWeek(parsedWeek[0].week_start);msg('Mevcut taslaklar korundu. '+result.created+' etkinlik oluşturuldu.'+(result.skipped.length?' Şablonu bulunmayan dersler: '+result.skipped.join(' | '):''))}catch(e){msg('Etkinlik üretimi: '+e.message)}await teacherView();return}
+ if(!payload.length){try{const result=await generateForWeek(parsedWeek[0].week_start);msg('Mevcut taslaklar korundu. '+(fixedDrafts?fixedDrafts+' hatalı taslak düzeltildi. ':'')+result.created+' etkinlik oluşturuldu.'+(result.skipped.length?' Şablonu bulunmayan dersler: '+result.skipped.join(' | '):''))}catch(e){msg('Etkinlik üretimi: '+e.message)}await teacherView();return}
  const {error}=await db.from('lessons').insert(payload);
  if(error){msg(error.message)}else{try{const result=await generateForWeek(parsedWeek[0].week_start);msg(payload.length+' ders taslak kaydedildi. '+result.created+' etkinlik oluşturuldu.'+(result.skipped.length?' Şablonu bulunmayan dersler: '+result.skipped.join(' | '):''))}catch(e){msg('Dersler kaydedildi; bazı etkinlikler üretilemedi: '+e.message)}await teacherView()}
 };
