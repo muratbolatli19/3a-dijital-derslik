@@ -272,10 +272,10 @@
       "id": "hb-trafik-kahramanlari-v1",
       "kind": "game",
       "subject": "Hayat Bilgisi",
-      "title": "🚗 Minik Sürücü – Şehir Macerası",
-      "description": "Direksiyon, gaz, fren ve trafik ışıkları · 5 hedef",
-      "url": "minik-surucu.html",
-      "version": 2,
+      "title": "🚗 Minik Sürücü 3D – Şehir Macerası",
+      "description": "3D şehir, takip kamerası ve güvenli sürüş",
+      "url": "minik-surucu-3d.html",
+      "version": 3,
       "visibility": "shared",
       "published": true
     }
