@@ -124,6 +124,7 @@ body:has(#main:not(.hidden)) .wrap{max-width:1160px!important;margin:5px auto!im
 <button id="signin">Giriş yap</button><button id="signup" class="alt hidden">İlk öğretmen hesabımı oluştur</button><button id="reset" class="alt">Şifremi sıfırla</button>
 <p class="notice">Öğrenciler adlarını listeden seçer ve mevcut şifrelerini girer. Öğrenci numarasını ayrıca yazmaları gerekmez. Öğretmenler e-posta adresleriyle giriş yapar.</p>
 </div>
+<div class="panel hidden" id="passwordRecoveryPanel"><h2>🔐 Öğretmen Şifremi Yenile</h2><p>Yeni şifrenizi aşağıya yazın. Şifreniz en az 12 karakter olmalıdır.</p><label for="newTeacherPassword">Yeni şifre</label><input id="newTeacherPassword" type="password" autocomplete="new-password" minlength="12"><label for="confirmTeacherPassword">Yeni şifre (tekrar)</label><input id="confirmTeacherPassword" type="password" autocomplete="new-password" minlength="12"><button type="button" id="setNewTeacherPassword">Yeni şifremi kaydet</button><p id="recoveryMessage" role="status" aria-live="polite"></p></div>
 <div class="panel hidden" id="main">
 <div class="welcome-hero"><div class="welcome-intro"><div><h2 id="greeting">Hoş geldiniz</h2><p class="muted" id="role"></p></div><img class="welcome-mark" src="dijital-derslik-yeni-amblem.png" alt="Dijital Derslik amblemi" loading="eager"></div><button id="logout" class="alt">Çıkış</button></div>
 <div id="teacher" class="hidden"><div class="panel"><h3>🛡️ Sistem Hazırlık Kontrolü</h3><div id="systemHealth">Kontrol ediliyor...</div><button type="button" id="refreshSystemHealth" class="alt">Kontrolü yenile</button></div><div class="panel"><h3>🎮 Hazır Oyun Yönetimi</h3><p>Oyunları burada birlikte hazırlayıp siteye ekliyoruz. Bu panelden öğrencilere açıp kapatabilirsiniz.</p><div id="readyGames"></div></div><div class="panel"><a href="oyun-test-merkezi.html"><button type="button">📝 Online Test Merkezini Aç</button></a></div><div class="panel"><h3>📝 Online Test Oluştur</h3><p>Her soru için soru metni, üç şık ve doğru şık numarasını girin. Birden fazla soruyu alt alta ekleyebilirsiniz.</p><label>Ders</label><select id="testSubject"><option>Matematik</option><option>Türkçe</option><option>Fen Bilimleri</option><option>Hayat Bilgisi</option></select><label>Test adı</label><input id="testTitle" placeholder="Tek ve Çift Sayılar Testi"><label>PDF bağlantısı (isteğe bağlı)</label><input id="testPdf" type="url" placeholder="https://...pdf"><label>Veya PDF dosyası yükle (10 MB sınırı)</label><input id="testPdfFile" type="file" accept="application/pdf"><button type="button" id="previewDraftTest" class="alt">👁 Test taslağını kontrol et</button><div id="draftTestPreview"></div><label>Hazırladığımız online testi JSON dosyasından yükle</label><input type="file" id="testJson" accept=".json,application/json"><p class="muted">JSON içeriği: title, subject, questions (prompt, options ve correct_index). HTML/JavaScript dosyaları güvenlik nedeniyle çalıştırılmaz.</p><label>Sorular (her satır: Soru | A şıkkı | B şıkkı | C şıkkı | doğru şık: 1, 2 veya 3)</label><textarea id="testQuestions" rows="7" placeholder="12 sayısı tek mi çifttir? | Tek | Çift | Bütün | 2"></textarea><button type="button" id="saveOnlineTest">Testi taslak olarak kaydet</button><div id="manageTests"></div><p id="testMessage" aria-live="polite"></p></div><div class="panel teacher-hero"><h2>Murat Bolatlı · Öğretmen Kontrol Merkezi</h2><p>Haftalık planlarınızı yönetin, etkinliklere ulaşın ve öğrencilerin gelişimini takip edin.</p></div><div class="panel"><h3>📅 Haftalık Planın Tamamını Ekle</h3><div class="panel"><h4>📅 Haftalık plan durumları</h4><div id="weeklyOverview">Planlar yükleniyor...</div><button id="reloadWeeklyOverview" type="button" class="alt">Planları yenile</button></div><p>Plan tablosunu yapıştırın; dört dersin öğrenme çıktısınını ve üstteki tarihi otomatik ayırıp önizleyin.</p><textarea id="weeklyText" style="min-height:170px" placeholder="3. SINIFLAR ZÜMRESİ HAFTALIK DERS PLANI (7.HAFTA)(26-30 EKİM)&#10;TÜRKÇE ... | MATEMATİK ..."></textarea><button id="weeklyParse" type="button">Planı önizle</button><div id="weeklyFields"></div><button id="weeklySave" class="hidden" type="button">Dört dersi taslak kaydet</button></div>
@@ -380,7 +381,7 @@ if($('openStudentPreview'))$('openStudentPreview').onclick=async()=>{
 };
 $('previewStudentSelect').onchange=()=>showStudentPreview($('previewStudentSelect').value);
 $('closeStudentPreview').onclick=()=>{$('teacherStudentPreview').classList.add('hidden');$('teacher').classList.remove('hidden')};
-async function refresh(){const {data:{user}}=await db.auth.getUser();me=user;$('landingLesson')?.classList.toggle('hidden',!!user);if(!me){$('auth').classList.remove('hidden');$('main').classList.add('hidden');return}
+async function refresh(){if(passwordRecoveryMode)return;const {data:{user}}=await db.auth.getUser();me=user;$('landingLesson')?.classList.toggle('hidden',!!user);if(!me){$('auth').classList.remove('hidden');$('main').classList.add('hidden');return}
 $('auth').classList.add('hidden');$('main').classList.remove('hidden');
 const {data:p,error}=await db.from('profiles').select('role,display_name,active').eq('id',me.id).maybeSingle();
 profile=p;if(error||!p||!p.active){$('greeting').textContent='Hesap doğrulama bekliyor';$('role').textContent='E-posta hesabınız oluşturuldu. Öğretmen yetkisi güvenli yönetim ekranından atanmalıdır.';$('teacher').classList.add('hidden');$('student').classList.add('hidden');return}
@@ -425,7 +426,7 @@ $('signin').onclick=async()=>{
  }catch(e){msg('Bağlantı veya oturum hatası: '+e.message)}finally{button.disabled=false}
 };
 $('signup').onclick=async()=>{if($('password').value.length<12){msg('Şifre en az 12 karakter olmalıdır.');return}const {error}=await db.auth.signUp({email:$('email').value.trim(),password:$('password').value});msg(error?error.message:'Hesap isteği alındı. E-posta doğrulamasını yapın; öğretmen yetkisi ayrıca tanımlanmalıdır.')};
-$('reset').onclick=async()=>{if(loginMode==='student')return msg('Öğrenci hesapları için e-posta sıfırlama kullanılmaz. Hesap şifresini yalnızca öğretmen Supabase yönetiminden değiştirebilir.');const address=$('email').value.trim();if(!address.includes('@')||!address.includes('.'))return msg('Şifre sıfırlama öğretmen e-postası içindir. Öğrenciler şifre yenileme için öğretmenine başvurmalıdır.');const {error}=await db.auth.resetPasswordForEmail(address,{redirectTo:location.origin+location.pathname});msg(error?error.message:'Sıfırlama e-postası gönderilmesi istendi.')};
+$('reset').onclick=async()=>{if(loginMode==='student')return msg('Öğrenci hesapları için e-posta sıfırlama kullanılmaz. Hesap şifresini yalnızca öğretmen Supabase yönetiminden değiştirebilir.');const address=$('email').value.trim();if(!address.includes('@')||!address.includes('.'))return msg('Şifre sıfırlama öğretmen e-postası içindir. Öğrenciler şifre yenileme için öğretmenine başvurmalıdır.');const {error}=await db.auth.resetPasswordForEmail(address,{redirectTo:'https://muratbolatli19.github.io/3a-dijital-derslik/derslik.html'});msg(error?error.message:'Şifre sıfırlama e-postası istendi. Yeni gelen en son e-postadaki bağlantıyı açın. Bağlantı hâlâ localhost adresine gidiyorsa Supabase Auth URL Configuration ayarı düzeltilmelidir.')};
 $('logout').onclick=async()=>{await db.auth.signOut();await refresh()};
 $('form').onsubmit=async e=>{e.preventDefault();const obj={author_id:me.id,subject:$('subject').value,week_start:$('week').value,title:$('title').value.trim(),outcome:$('outcome').value.trim(),explanation:$('explanation').value.trim(),video_url:$('video').value.trim()||null,published:false};try{const file=$('videoFile').files[0];if(file)obj.video_url=await uploadLessonVideo(file)}catch(err){msg(err.message);return}const {data:created,error}=await db.from('lessons').insert(obj).select('id').single();if(error){msg(error.message)}else{try{const g=await generateForLesson(created.id);msg('Öğrenme Çıktısı kaydedildi; '+g.created+' etkinlik otomatik oluşturuldu.')}catch(e){msg('Öğrenme Çıktısı kaydedildi ancak etkinlik üretimi başarısız: '+e.message)}e.target.reset();await teacherView()}};
 async function uploadLessonVideo(file){
@@ -997,5 +998,31 @@ async function refreshReadingTeacherResults(){
  const body=document.createElement('tbody');for(const result of res.data){const tr=document.createElement('tr');for(const value of [names.get(result.student_id)||'Öğrenci',result.story_id==='kayip-anahtar-1'?'Kayıp Anahtarın Sırrı':result.story_id,result.score+'/30']){const cell=document.createElement('td');cell.textContent=value;cell.style.padding='8px';tr.append(cell)}body.append(tr)}table.append(body);root.append(table)
 }
 $('refreshReadingTeacher').onclick=refreshReadingTeacherResults;
+const recoveryTarget='https://muratbolatli19.github.io/3a-dijital-derslik/derslik.html';
+let passwordRecoveryMode=false;
+const queryError=new URLSearchParams(window.location.search);
+const hashValues=new URLSearchParams(window.location.hash.replace(/^#/,''));
+if(queryError.get('error_code')==='otp_expired'||hashValues.get('error_code')==='otp_expired'){
+ msg('Şifre sıfırlama bağlantısının süresi dolmuş veya bağlantı daha önce kullanılmış. Lütfen öğretmen girişinden yeni bir e-posta isteyin.');
+ history.replaceState(null,'',location.pathname);
+}
+function showPasswordRecovery(){passwordRecoveryMode=true;$('auth').classList.add('hidden');$('main').classList.add('hidden');$('passwordRecoveryPanel').classList.remove('hidden');}
+db.auth.onAuthStateChange((event)=>{
+ if(event==='PASSWORD_RECOVERY')showPasswordRecovery();
+});
+$('setNewTeacherPassword').onclick=async()=>{
+ const first=$('newTeacherPassword').value,second=$('confirmTeacherPassword').value,notice=$('recoveryMessage');
+ if(first.length<12){notice.textContent='Yeni şifreniz en az 12 karakter olmalıdır.';return}
+ if(first!==second){notice.textContent='Şifreler eşleşmiyor.';return}
+ const button=$('setNewTeacherPassword');button.disabled=true;
+ try{const {error}=await db.auth.updateUser({password:first});if(error)throw error;
+ notice.textContent='Şifreniz başarıyla değiştirildi. Yeni şifrenizle öğretmen girişini kullanabilirsiniz.';
+ $('newTeacherPassword').value='';$('confirmTeacherPassword').value='';
+ await db.auth.signOut();passwordRecoveryMode=false;
+ $('passwordRecoveryPanel').classList.add('hidden');$('auth').classList.remove('hidden');$('main').classList.add('hidden');
+ msg('Şifreniz yenilendi. Öğretmen girişinden yeni şifrenizle giriş yapın.');
+ history.replaceState(null,'',location.pathname);
+ }catch(e){notice.textContent='Şifre yenilenemedi: '+e.message}finally{button.disabled=false}
+};
 await refresh();
 </script></body></html>
