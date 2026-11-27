@@ -440,7 +440,7 @@ async function uploadLessonVideo(file){
  return db.storage.from('lesson-videos').getPublicUrl(path).data.publicUrl;
 }
 async function generateForLesson(id){const {data:{session}}=await db.auth.getSession();if(!session)throw Error('Oturum açın.');const res=await fetch('https://zhmkyfouskthqgrhvhqp.supabase.co/functions/v1/generate-lesson-activities',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable_YcqB4BO9knYzHk4KKLye3A_ilBb6I9u','Content-Type':'application/json'},body:JSON.stringify({lesson_id:id})});const json=await res.json();if(!res.ok)throw Error(json.error||'Oluşturulamadı');return json;}
-async function generateForWeek(date){const {data:rows,error}=await db.from('lessons').select('id,subject').eq('week_start',date).is('deleted_at',null);if(error)throw error;let total=0;for(const l of rows||[]){const out=await generateForLesson(l.id);total+=out.created||0;}return total;}
+async function generateForWeek(date){const {data:rows,error}=await db.from('lessons').select('id,subject').eq('week_start',date).is('deleted_at',null);if(error)throw error;let total=0;const skipped=[];for(const l of rows||[]){try{const out=await generateForLesson(l.id);total+=out.created||0}catch(e){skipped.push(l.subject+': '+e.message)}}return {created:total,skipped};}
 async function showVideoParts(){
  const id=$('partLesson').value;if(!id){$('partList').innerHTML='';return}
  const {data,error}=await db.from('lesson_video_parts').select('id,part_number,title,video_url').eq('lesson_id',id).order('part_number');
@@ -962,6 +962,13 @@ $('weeklyParse').onclick=()=>{
   return -1;
  };
  const outcomes=Array(4).fill('');
+ const codePattern=[null,/\bMAT\.3\./i,/\bFB\.3\./i,/\bHB\.3\./i];
+ const looksWrong=(subject,value)=>{
+   const codes=[...String(value).matchAll(/\b(MAT|FB|HB)\.3\./gi)].map(m=>m[1].toUpperCase());
+   if(!codes.length)return false;
+   if(subject===0)return codes.some(c=>c!=='');
+   return codes.some(c=>c!==['','MAT','FB','HB'][subject]);
+ };
  // Önce yatay tabloyu (Markdown, sekmeyle ayrılmış Excel) destekle.
  const lines=raw.split('\n').map(x=>x.trim()).filter(Boolean);
  for(let i=0;i<lines.length;i++){
@@ -991,6 +998,9 @@ $('weeklyParse').onclick=()=>{
    if(current>=0&&!/^\s*(?:[-|:\s]+|(?:20\d{2}[-./]\d{1,2})|(?:\d+\.?\s*HAFTA))\s*$/i.test(line))blocks[current].push(line);
   }
   blocks.forEach((b,i)=>{if(!outcomes[i])outcomes[i]=b.join('\n').trim()});
+  // Fen kazanımı, Hayat Bilgisi alanını dolduramaz.
+  for(let i=1;i<4;i++){if(looksWrong(i,outcomes[i]))outcomes[i]=''}
+
  }
  parsedWeek=names.map((subject,i)=>({subject,outcome:outcomes[i],week_start:date}));
  const frame=$('weeklyFields');frame.replaceChildren();
@@ -1001,6 +1011,7 @@ $('weeklyParse').onclick=()=>{
  parsedWeek.forEach((x,i)=>{
   const label=document.createElement('label');label.textContent=x.subject+(x.outcome?' · bulundu':' · metin bulunamadı, buraya ekleyin');frame.append(label);
   const ta=document.createElement('textarea');ta.dataset.lesson=String(i);ta.value=x.outcome;ta.rows=4;frame.append(ta);
+  if(i>0&&!x.outcome){const warn=document.createElement('p');warn.className='status-warn';warn.textContent=x.subject+' için uygun öğrenme çıktısı bulunamadı. Doğru kazanımı girmeniz gerekiyor.';frame.append(warn)}
  });
  $('weeklySave').classList.remove('hidden');
  msg('Önizleme oluşturuldu. Tarihi ve dört dersin metnini kontrol ederek taslak olarak kaydedin.');
@@ -1009,14 +1020,15 @@ $('weeklySave').onclick=async()=>{
  if(profile?.role!=='teacher')return;
  const chosenDate=$('weekParsedDate')?.value;if(!chosenDate)return msg('Kaydetmeden önce haftanın başlangıç tarihini seçin.');parsedWeek.forEach(item=>item.week_start=chosenDate);
  document.querySelectorAll('[data-lesson]').forEach(el=>parsedWeek[Number(el.dataset.lesson)].outcome=el.value.trim());
- if(parsedWeek.some(x=>!x.outcome))return msg('Dört dersin öğrenme çıktısını da doldurulmalı.');
+ if(parsedWeek.some(x=>!x.outcome))return msg('Dört dersin öğrenme çıktısını doldurun. Eksik veya yanlış ders kazanımlarını kaydetmeyin.');
+ for(let i=1;i<4;i++){if(looksWrong(i,parsedWeek[i].outcome))return msg(parsedWeek[i].subject+' için farklı derse ait bir kazanım kodu bulundu. Lütfen ilgili dersin gerçek kazanımını girin.');}
  const {data:existing,error:readError}=await db.from('lessons').select('subject').eq('week_start',parsedWeek[0].week_start);
  if(readError)return msg(readError.message);
  const done=new Set((existing||[]).map(x=>x.subject));
  const payload=parsedWeek.filter(x=>!done.has(x.subject)).map(x=>({...x,title:x.outcome.slice(0,100),explanation:x.outcome,author_id:me.id,published:false}));
- if(!payload.length){try{const n=await generateForWeek(parsedWeek[0].week_start);msg('Bu haftanın mevcut öğrenme çıktıları korundu. '+n+' eksik etkinlik oluşturuldu.')}catch(e){msg('Etkinlik üretimi: '+e.message)}await teacherView();return}
+ if(!payload.length){try{const result=await generateForWeek(parsedWeek[0].week_start);msg('Mevcut taslaklar korundu. '+result.created+' etkinlik oluşturuldu.'+(result.skipped.length?' Şablonu bulunmayan dersler: '+result.skipped.join(' | '):''))}catch(e){msg('Etkinlik üretimi: '+e.message)}await teacherView();return}
  const {error}=await db.from('lessons').insert(payload);
- if(error){msg(error.message)}else{try{const n=await generateForWeek(parsedWeek[0].week_start);msg(payload.length+' ders kaydedildi. '+n+' etkinlik otomatik oluşturuldu.')}catch(e){msg('Dersler kaydedildi; bazı etkinlikler üretilemedi: '+e.message)}await teacherView()}
+ if(error){msg(error.message)}else{try{const result=await generateForWeek(parsedWeek[0].week_start);msg(payload.length+' ders taslak kaydedildi. '+result.created+' etkinlik oluşturuldu.'+(result.skipped.length?' Şablonu bulunmayan dersler: '+result.skipped.join(' | '):''))}catch(e){msg('Dersler kaydedildi; bazı etkinlikler üretilemedi: '+e.message)}await teacherView()}
 };
 
 async function renderStudentGameCategories(){
