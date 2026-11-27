@@ -267,6 +267,17 @@
       "version": 1,
       "visibility": "shared",
       "published": true
+    },
+    {
+      "id": "hb-trafik-kahramanlari-v1",
+      "kind": "game",
+      "subject": "Hayat Bilgisi",
+      "title": "🚦 Trafik Kahramanları – Güvenli Şehir",
+      "description": "30 görev · Yaya geçidi, levhalar ve trafik ışıkları",
+      "url": "trafik-kahramanlari.html",
+      "version": 1,
+      "visibility": "shared",
+      "published": true
     }
   ]
 }
