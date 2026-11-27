@@ -127,7 +127,7 @@ body:has(#main:not(.hidden)) .wrap{max-width:1160px!important;margin:5px auto!im
 <div class="panel hidden" id="passwordRecoveryPanel"><h2>🔐 Öğretmen Şifremi Yenile</h2><p>Yeni şifrenizi aşağıya yazın. Şifreniz en az 12 karakter olmalıdır.</p><label for="newTeacherPassword">Yeni şifre</label><input id="newTeacherPassword" type="password" autocomplete="new-password" minlength="12"><label for="confirmTeacherPassword">Yeni şifre (tekrar)</label><input id="confirmTeacherPassword" type="password" autocomplete="new-password" minlength="12"><button type="button" id="setNewTeacherPassword">Yeni şifremi kaydet</button><p id="recoveryMessage" role="status" aria-live="polite"></p></div>
 <div class="panel hidden" id="main">
 <div class="welcome-hero"><div class="welcome-intro"><div><h2 id="greeting">Hoş geldiniz</h2><p class="muted" id="role"></p></div><img class="welcome-mark" src="dijital-derslik-yeni-amblem.png" alt="Dijital Derslik amblemi" loading="eager"></div><button id="logout" class="alt">Çıkış</button></div>
-<div id="teacher" class="hidden"><div class="panel"><h3>🛡️ Sistem Hazırlık Kontrolü</h3><div id="systemHealth">Kontrol ediliyor...</div><button type="button" id="refreshSystemHealth" class="alt">Kontrolü yenile</button></div><div class="panel"><h3>🎮 Hazır Oyun Yönetimi</h3><p>Oyunları burada birlikte hazırlayıp siteye ekliyoruz. Bu panelden öğrencilere açıp kapatabilirsiniz.</p><div id="readyGames"></div></div><div class="panel"><a href="oyun-test-merkezi.html"><button type="button">📝 Online Test Merkezini Aç</button></a></div><div class="panel"><h3>📝 Online Test Oluştur</h3><p>Her soru için soru metni, üç şık ve doğru şık numarasını girin. Birden fazla soruyu alt alta ekleyebilirsiniz.</p><label>Ders</label><select id="testSubject"><option>Matematik</option><option>Türkçe</option><option>Fen Bilimleri</option><option>Hayat Bilgisi</option></select><label>Test adı</label><input id="testTitle" placeholder="Tek ve Çift Sayılar Testi"><label>PDF bağlantısı (isteğe bağlı)</label><input id="testPdf" type="url" placeholder="https://...pdf"><label>Veya PDF dosyası yükle (10 MB sınırı)</label><input id="testPdfFile" type="file" accept="application/pdf"><button type="button" id="previewDraftTest" class="alt">👁 Test taslağını kontrol et</button><div id="draftTestPreview"></div><label>Hazırladığımız online testi JSON dosyasından yükle</label><input type="file" id="testJson" accept=".json,application/json"><p class="muted">JSON içeriği: title, subject, questions (prompt, options ve correct_index). HTML/JavaScript dosyaları güvenlik nedeniyle çalıştırılmaz.</p><label>Sorular (her satır: Soru | A şıkkı | B şıkkı | C şıkkı | doğru şık: 1, 2 veya 3)</label><textarea id="testQuestions" rows="7" placeholder="12 sayısı tek mi çifttir? | Tek | Çift | Bütün | 2"></textarea><button type="button" id="saveOnlineTest">Testi taslak olarak kaydet</button><div id="manageTests"></div><p id="testMessage" aria-live="polite"></p></div><div class="panel teacher-hero"><h2>Murat Bolatlı · Öğretmen Kontrol Merkezi</h2><p>Haftalık planlarınızı yönetin, etkinliklere ulaşın ve öğrencilerin gelişimini takip edin.</p></div><div class="panel"><h3>📅 Haftalık Planın Tamamını Ekle</h3><div class="panel"><h4>📅 Haftalık plan durumları</h4><div id="weeklyOverview">Planlar yükleniyor...</div><button id="reloadWeeklyOverview" type="button" class="alt">Planları yenile</button></div><p>Plan tablosunu yapıştırın; dört dersin öğrenme çıktısınını ve üstteki tarihi otomatik ayırıp önizleyin.</p><textarea id="weeklyText" style="min-height:170px" placeholder="3. SINIFLAR ZÜMRESİ HAFTALIK DERS PLANI (7.HAFTA)(26-30 EKİM)&#10;TÜRKÇE ... | MATEMATİK ..."></textarea><button id="weeklyParse" type="button">Planı önizle</button><div id="weeklyFields"></div><button id="weeklySave" class="hidden" type="button">Dört dersi taslak kaydet</button></div>
+<div id="teacher" class="hidden"><div class="panel"><h3>🛡️ Sistem Hazırlık Kontrolü</h3><div id="systemHealth">Kontrol ediliyor...</div><button type="button" id="refreshSystemHealth" class="alt">Kontrolü yenile</button></div><div class="panel"><h3>🎮 Hazır Oyun Yönetimi</h3><p>Oyunları burada birlikte hazırlayıp siteye ekliyoruz. Bu panelden öğrencilere açıp kapatabilirsiniz.</p><div id="readyGames"></div></div><div class="panel"><a href="oyun-test-merkezi.html"><button type="button">📝 Online Test Merkezini Aç</button></a></div><div class="panel"><h3>📝 Online Test Oluştur</h3><p>Her soru için soru metni, üç şık ve doğru şık numarasını girin. Birden fazla soruyu alt alta ekleyebilirsiniz.</p><label>Ders</label><select id="testSubject"><option>Matematik</option><option>Türkçe</option><option>Fen Bilimleri</option><option>Hayat Bilgisi</option></select><label>Test adı</label><input id="testTitle" placeholder="Tek ve Çift Sayılar Testi"><label>PDF bağlantısı (isteğe bağlı)</label><input id="testPdf" type="url" placeholder="https://...pdf"><label>Veya PDF dosyası yükle (10 MB sınırı)</label><input id="testPdfFile" type="file" accept="application/pdf"><button type="button" id="previewDraftTest" class="alt">👁 Test taslağını kontrol et</button><div id="draftTestPreview"></div><label>Hazırladığımız online testi JSON dosyasından yükle</label><input type="file" id="testJson" accept=".json,application/json"><p class="muted">JSON içeriği: title, subject, questions (prompt, options ve correct_index). HTML/JavaScript dosyaları güvenlik nedeniyle çalıştırılmaz.</p><label>Sorular (her satır: Soru | A şıkkı | B şıkkı | C şıkkı | doğru şık: 1, 2 veya 3)</label><textarea id="testQuestions" rows="7" placeholder="12 sayısı tek mi çifttir? | Tek | Çift | Bütün | 2"></textarea><button type="button" id="saveOnlineTest">Testi taslak olarak kaydet</button><div id="manageTests"></div><p id="testMessage" aria-live="polite"></p></div><div class="panel teacher-hero"><h2>Murat Bolatlı · Öğretmen Kontrol Merkezi</h2><p>Haftalık planlarınızı yönetin, etkinliklere ulaşın ve öğrencilerin gelişimini takip edin.</p></div><div class="panel"><h3>📅 Haftalık Planın Tamamını Ekle</h3><div class="panel"><h4>📅 Haftalık plan durumları</h4><div id="weeklyOverview">Planlar yükleniyor...</div><button id="reloadWeeklyOverview" type="button" class="alt">Planları yenile</button></div><p>Word veya Excel'den haftalık planı yapıştırın. Ders başlıkları alt alta da olabilir. Tarihi otomatik algılayamazsa takvimden seçebilirsiniz.</p><textarea id="weeklyText" style="min-height:170px" placeholder="3. SINIFLAR ZÜMRESİ HAFTALIK DERS PLANI (7.HAFTA)(26-30 EKİM)&#10;TÜRKÇE ... | MATEMATİK ..."></textarea><button id="weeklyParse" type="button">Planı önizle</button><div id="weeklyFields"></div><button id="weeklySave" class="hidden" type="button">Dört dersi taslak kaydet</button></div>
 <div class="panel"><h3>Yeni Öğrenme Çıktısı</h3><form id="form">
 <div class="grid"><div><label>Ders</label><select id="subject"><option>Matematik</option><option>Türkçe</option><option>Fen Bilimleri</option><option>Hayat Bilgisi</option></select></div><div><label>Hafta başlangıcı</label><input type="date" id="week" required></div></div>
 <label>Öğrenme Çıktısı Kısa Adı (yalnızca panelde tanımlama için)</label><input id="title" required maxlength="180" placeholder="Bütün, yarım ve çeyrek">
@@ -936,21 +936,78 @@ $('bulkDownload').onclick=()=>{
 };
 let parsedWeek=[];
 $('weeklyParse').onclick=()=>{
- const text=$('weeklyText').value.replace(/<br\s*\/?>/gi,' ').replace(/&#x[A-Fa-f0-9]+;/g,' ');
- const d=text.match(/(\d{1,2})\s*[-–]\s*\d{1,2}\s*(EKİM|KASIM|ARALIK|EYLÜL|OCAK|ŞUBAT|MART|NİSAN|MAYIS|HAZİRAN)/i);
- const months={'OCAK':'01','ŞUBAT':'02','MART':'03','NİSAN':'04','MAYIS':'05','HAZİRAN':'06','EYLÜL':'09','EKİM':'10','KASIM':'11','ARALIK':'12'};
- const date=d?'2026-'+months[d[2].toLocaleUpperCase('tr-TR')]+'-'+d[1].padStart(2,'0'):'';
- const row=text.split('\n').find(x=>x.includes('MAT.3.')&&x.includes('FB.3.')&&x.includes('HB.3.'));
- const cells=row?row.split('|').map(x=>x.replace(/<[^>]+>/g,' ').trim()).filter(Boolean):[];
- const index=cells.findIndex(x=>x.includes('MAT.3.'));
- if(!date||index<1||cells.length<index+3){msg('Plan tablosunda tarihi veya dört dersi ayıramadım. Markdown tablo olarak yapıştırın.');$('weeklySave').classList.add('hidden');return}
+ const raw=$('weeklyText').value.replace(/<br\s*\/?>/gi,'\n').replace(/&nbsp;/gi,' ').replace(/\r/g,'').trim();
+ if(!raw){msg('Önce haftalık plan metnini yapıştırın.');$('weeklySave').classList.add('hidden');return}
+ const normalize=v=>v.toLocaleUpperCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/İ/g,'I').replace(/[^A-Z0-9.]+/g,' ').trim();
+ const months={OCAK:1,SUBAT:2,MART:3,NISAN:4,MAYIS:5,HAZIRAN:6,TEMMUZ:7,AGUSTOS:8,EYLUL:9,EKIM:10,KASIM:11,ARALIK:12};
+ const fromDate=(day,month,year)=>{
+   const m=Number(month),d=Number(day),y=Number(year);const check=new Date(Date.UTC(y,m-1,d));
+   return check.getUTCFullYear()===y&&check.getUTCMonth()===m-1&&check.getUTCDate()===d?String(y)+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0'):'';
+ };
+ let date='';
+ const normalizedDate=normalize(raw);
+ const wordDate=normalizedDate.match(/(\d{1,2})\s*(?:-|–|—|ILE|TO|\/|\s)\s*\d{1,2}\s+(OCAK|SUBAT|MART|NISAN|MAYIS|HAZIRAN|TEMMUZ|AGUSTOS|EYLUL|EKIM|KASIM|ARALIK)(?:\s+(\d{4}))?/);
+ const numericDate=raw.match(/(\d{1,2})[.\/-](\d{1,2})[.\/-](20\d{2})/);
+ const year=new Date().getFullYear();
+ if(wordDate)date=fromDate(wordDate[1],months[wordDate[2]],wordDate[3]||year);
+ if(!date&&numericDate)date=fromDate(numericDate[1],numericDate[2],numericDate[3]);
+ const lineDate=raw.match(/(20\d{2})-(\d{2})-(\d{2})/);if(!date&&lineDate)date=fromDate(lineDate[3],lineDate[2],lineDate[1]);
  const names=['Türkçe','Matematik','Fen Bilimleri','Hayat Bilgisi'];
- parsedWeek=names.map((subject,i)=>({subject,outcome:cells[index-1+i],week_start:date}));
- $('weeklyFields').innerHTML='<p>Başlangıç tarihi: <b>'+date+'</b></p>'+parsedWeek.map((x,i)=>'<label>'+x.subject+'</label><textarea data-lesson="'+i+'">'+esc(x.outcome)+'</textarea>').join('');
- $('weeklySave').classList.remove('hidden');msg('Önizlemeyi kontrol edip kaydedebilirsiniz.');
+ const classify=line=>{
+  const x=normalize(line).replace(/^\d+\s*[.)]\s*/,'');
+  if(/^(TURKCE|TURK DILI|TURKCE DERSI)(?:\s|$)/.test(x))return 0;
+  if(/^(MATEMATIK|MATEMATIK DERSI)(?:\s|$)/.test(x))return 1;
+  if(/^(FEN BILIMLERI|FEN BILGISI|FEN)(?:\s|$)/.test(x))return 2;
+  if(/^(HAYAT BILGISI|HAYAT BILGILERI)(?:\s|$)/.test(x))return 3;
+  return -1;
+ };
+ const outcomes=Array(4).fill('');
+ // Önce yatay tabloyu (Markdown, sekmeyle ayrılmış Excel) destekle.
+ const lines=raw.split('\n').map(x=>x.trim()).filter(Boolean);
+ for(let i=0;i<lines.length;i++){
+  const line=lines[i],cols=line.split(/\s*\|\s*|\t/).map(v=>v.replace(/<[^>]+>/g,' ').trim()).filter(Boolean);
+  if(cols.length<4)continue;
+  const pos=cols.findIndex(v=>/MAT\.3\.|MATEMATIK/i.test(v));
+  if(pos>0&&pos+2<cols.length&&(/FB\.3\.|FEN/i.test(cols[pos+1]))&&(/HB\.3\.|HAYAT/i.test(cols[pos+2]))){
+   [cols[pos-1],cols[pos],cols[pos+1],cols[pos+2]].forEach((v,j)=>outcomes[j]=v);break;
+  }
+ }
+ // Word'den gelen alt alta ders başlıklarını ve içeriklerini ayrı ayrı topla.
+ if(outcomes.some(x=>!x)){
+  let current=-1;const blocks=[[],[],[],[]];
+  for(const line of lines){
+   const cells=line.split(/\t|\|/).map(t=>t.trim()).filter(Boolean);
+   if(cells.length>=4&&cells.every((t,i)=>classify(t)===i))continue;
+   if(cells.length>=2){
+    const c=classify(cells[0]);if(c>=0){current=c;if(cells.length>1)blocks[c].push(cells.slice(1).join(' '));continue}
+   }
+   const which=classify(line);
+   if(which>=0){
+    current=which;
+    const remainder=line.replace(/^\s*(?:TÜRKÇE|TURKCE|MATEMATİK|MATEMATIK|FEN BİLİMLERİ|FEN BILIMLERI|FEN BİLGİSİ|FEN BILGISI|HAYAT BİLGİSİ|HAYAT BILGISI)\s*[:：–—-]?\s*/i,'').trim();
+    if(remainder)blocks[which].push(remainder);
+    continue;
+   }
+   if(current>=0&&!/^\s*(?:[-|:\s]+|(?:20\d{2}[-./]\d{1,2})|(?:\d+\.?\s*HAFTA))\s*$/i.test(line))blocks[current].push(line);
+  }
+  blocks.forEach((b,i)=>{if(!outcomes[i])outcomes[i]=b.join('\n').trim()});
+ }
+ parsedWeek=names.map((subject,i)=>({subject,outcome:outcomes[i],week_start:date}));
+ const frame=$('weeklyFields');frame.replaceChildren();
+ const intro=document.createElement('p');intro.textContent='Planı kontrol edin. Eksik veya yanlış ayrılan alanları düzenleyebilirsiniz.';frame.append(intro);
+ const dateLabel=document.createElement('label');dateLabel.htmlFor='weekParsedDate';dateLabel.textContent='📅 Haftanın başlangıç tarihi (zorunlu)';frame.append(dateLabel);
+ const dateInput=document.createElement('input');dateInput.type='date';dateInput.id='weekParsedDate';dateInput.value=date;dateInput.required=true;frame.append(dateInput);
+ if(!date){const warning=document.createElement('p');warning.className='status-warn';warning.textContent='Metinde tarih bulunamadı. Takvimden haftanın ilk gününü seçin.';frame.append(warning)}
+ parsedWeek.forEach((x,i)=>{
+  const label=document.createElement('label');label.textContent=x.subject+(x.outcome?' · bulundu':' · metin bulunamadı, buraya ekleyin');frame.append(label);
+  const ta=document.createElement('textarea');ta.dataset.lesson=String(i);ta.value=x.outcome;ta.rows=4;frame.append(ta);
+ });
+ $('weeklySave').classList.remove('hidden');
+ msg('Önizleme oluşturuldu. Tarihi ve dört dersin metnini kontrol ederek taslak olarak kaydedin.');
 };
 $('weeklySave').onclick=async()=>{
  if(profile?.role!=='teacher')return;
+ const chosenDate=$('weekParsedDate')?.value;if(!chosenDate)return msg('Kaydetmeden önce haftanın başlangıç tarihini seçin.');parsedWeek.forEach(item=>item.week_start=chosenDate);
  document.querySelectorAll('[data-lesson]').forEach(el=>parsedWeek[Number(el.dataset.lesson)].outcome=el.value.trim());
  if(parsedWeek.some(x=>!x.outcome))return msg('Dört dersin öğrenme çıktısını da doldurulmalı.');
  const {data:existing,error:readError}=await db.from('lessons').select('subject').eq('week_start',parsedWeek[0].week_start);
