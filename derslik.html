@@ -1046,7 +1046,7 @@ async function renderStudentGameCategories(){
  root.replaceChildren();
  const groups=['Türkçe','Matematik','Fen Bilimleri','Hayat Bilgisi','Klasik Oyunlar'];
  let games=[];
- try{const response=await fetch('icerik-katalogu.json?v=student-mini-1',{cache:'no-store'});if(!response.ok)throw Error('Katalog yüklenemedi');const catalog=await response.json();games=(catalog.items||[]).filter(g=>g.kind==='game'&&g.published===true&&g.visibility==='shared')}
+ try{const response=await fetch('icerik-katalogu.json?v=student-mini-2',{cache:'no-store'});if(!response.ok)throw Error('Katalog yüklenemedi');const catalog=await response.json();games=(catalog.items||[]).filter(g=>g.kind==='game'&&g.published===true&&g.visibility==='shared')}
  catch(e){root.textContent='Oyun listesi yüklenemedi. Sayfayı yenileyin.';return}
  for(const subject of groups){
   const details=document.createElement('details');
@@ -1059,7 +1059,7 @@ async function renderStudentGameCategories(){
    const item=document.createElement('div');item.className='game-entry';
    const label=document.createElement('span');label.textContent=game.title;
    const link=document.createElement('a');const url=String(game.url||'');
-   if(!/^[a-z0-9-]+\.html$/i.test(url))continue;
+   if(!/^[a-z0-9-]+\.html$/i.test(url)&&url!=='https://saat-kasifleri-murat.muratbolatli19.chatgpt.site/')continue;
    link.href=url;link.textContent='▶ Oyna';link.target='_blank';link.rel='noopener noreferrer';
    item.append(label,link);content.append(item)
   }
