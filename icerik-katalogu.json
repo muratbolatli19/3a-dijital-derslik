@@ -243,6 +243,18 @@
       "version": 2,
       "visibility": "shared",
       "published": true
+    },
+    {
+      "id": "mat-renkli-saat-kasifleri-v1",
+      "kind": "game",
+      "subject": "Matematik",
+      "title": "⏰ Renkli Saat Kâşifleri",
+      "description": "Akrep ve yelkovanı hareket ettirerek analog ve dijital saatleri keşfet.",
+      "learning_outcome": "Analog ve Dijital Saatler",
+      "url": "https://saat-kasifleri-murat.muratbolatli19.chatgpt.site/",
+      "version": 1,
+      "visibility": "shared",
+      "published": true
     }
   ]
 }
