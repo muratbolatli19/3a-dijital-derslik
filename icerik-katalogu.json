@@ -277,6 +277,18 @@
       "url": "minik-surucu-3d.html",
       "version": 3,
       "visibility": "shared",
+      "published": false
+    },
+    {
+      "id": "hb-trafik-rallisi-v1",
+      "kind": "game",
+      "subject": "Hayat Bilgisi",
+      "title": "🏁 Trafik Levhaları Rallisi",
+      "description": "10 görev · Trafik levhalarını tanı, doğru cevaplarla hız kazan.",
+      "learning_outcome": "Trafik levhaları ve güvenli ulaşım",
+      "url": "trafik-levhalari-rallisi.html",
+      "version": 3,
+      "visibility": "shared",
       "published": true
     }
   ]
