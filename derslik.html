@@ -322,7 +322,7 @@ function setupDashboardNavigation(role){
   for(const j of g.indices)if(children[j])page.append(children[j]);
   content.append(page);pages.push(page);
   const btn=document.createElement('button');btn.type='button';btn.textContent=g.title;
-  btn.onclick=()=>{pages.forEach((p,k)=>p.classList.toggle('active',k===i));Array.from(menu.querySelectorAll('button')).forEach((b,k)=>{b.classList.toggle('active',k===i);b.setAttribute('aria-current',k===i?'page':'false')});layout.classList.remove('menu-open');toggle.setAttribute('aria-expanded','false')};menu.append(btn);
+  btn.onclick=()=>{pages.forEach((p,k)=>p.classList.toggle('active',k===i));Array.from(menu.querySelectorAll('button')).forEach((b,k)=>{b.classList.toggle('active',k===i);b.setAttribute('aria-current',k===i?'page':'false')});layout.classList.remove('menu-open');toggle.setAttribute('aria-expanded','false');if(role==='teacher'&&g.title==='📖 Okuma Anlama')refreshReadingTeacherResults().catch(()=>{});};menu.append(btn);
   if(i===0)btn.click();
  }
  root.append(toggle,layout);layout.append(menu,content);root.dataset.navigationReady='true';
