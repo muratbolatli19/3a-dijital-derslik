@@ -315,7 +315,7 @@ function setupDashboardNavigation(role){
  toggle.onclick=()=>{layout.classList.toggle('menu-open');toggle.setAttribute('aria-expanded',String(layout.classList.contains('menu-open')))};
  const groups=role==='teacher'?
  [{title:'🏠 Genel Bakış',indices:[4,0]},{title:'👥 Öğrenciler ve Profiller',indices:[8]},{title:'📅 Haftalık Planlar',indices:[5]},{title:'✏️ Öğrenme Çıktısı Ekle',indices:[6]},{title:'📚 Ders ve Video Yönetimi',indices:[7]},{title:'🎮 Oyun Yönetimi',indices:[1]},{title:'📖 Okuma Anlama',indices:[10]},{title:'📝 Online Testler',indices:[2,3]},{title:'📊 Gelişim Raporları',indices:[9]}]:
- [{title:'🚀 Benim Profilim',indices:[4]},{title:'📚 Haftalık Derslerim',indices:[5,6]},{title:'📖 Okuma Anlama',indices:[0]},{title:'📝 Online Testler ve PDF’ler',indices:[1]},{title:'🎮 Online Oyunlar',indices:[2]},{title:'🏆 Yıldız Ligi',indices:[3]}];
+ [{title:'🚀 Benim Profilim',indices:[4]},{title:'📚 Haftalık Derslerim',indices:[5,6,7]},{title:'📖 Okuma Anlama',indices:[0]},{title:'📝 Online Testler ve PDF’ler',indices:[1]},{title:'🎮 Online Oyunlar',indices:[2]},{title:'🏆 Yıldız Ligi',indices:[3]}];
  const pages=[];
  for(let i=0;i<groups.length;i++){
   const g=groups[i],page=document.createElement('section');page.className='dashboard-page';page.setAttribute('aria-label',g.title);
@@ -832,7 +832,7 @@ async function studentView(){
   card.append(link);today.append(card);
  }
  }
- const root=$('studentLessons');root.replaceChildren();
+ const root=$('studentLessons');root.replaceChildren();$('todayTasks').classList.add('hidden');
  if(!(data||[]).length){const empty=document.createElement('p');empty.className='notice';empty.textContent='Henüz yayınlanmış bir ders yok. Öğretmeniniz ders yayınladığında burada görünecek.';root.append(empty)}
  const weeks=new Map();
  for(const l of data||[]){const week=l.week_start||'Tarih belirtilmemiş';if(!weeks.has(week))weeks.set(week,[]);weeks.get(week).push(l)}
@@ -840,7 +840,7 @@ async function studentView(){
  const subjectIcons={'Türkçe':'📚','Matematik':'🧮','Fen Bilimleri':'🔬','Hayat Bilgisi':'🌱'};
  for(const [week,lessons] of [...weeks].sort((a,b)=>b[0].localeCompare(a[0]))){
   const panel=document.createElement('details');panel.className='week-group';panel.open=weekIndex===0;
-  const heading=document.createElement('summary');heading.textContent=(weekIndex===0?'🗓️ Son yayınlanan hafta · ':'🗓️ Önceki hafta · ')+week+' · '+lessons.length+' ders';panel.append(heading);
+  const heading=document.createElement('summary');const elapsed=Math.round((Date.parse(week)-Date.parse('2026-11-23'))/604800000);const weekNo=10+elapsed+(week<'2026-11-16'?1:0);heading.textContent='🗓️ '+(Number.isFinite(weekNo)?weekNo+'. Hafta':week)+(week===currentWeek?' · Bu hafta':'')+' · '+lessons.length+' ders';panel.append(heading);
   const group=document.createElement('div');group.className='week-lessons';panel.append(group);root.append(panel);
   const weekAssigned=lessons.flatMap(l=>(activityResponse.data||[]).filter(a=>a.lesson_id===l.id));const weekFinished=weekAssigned.filter(a=>done.has(a.id)).length;
   const weekSummary=document.createElement('p');weekSummary.className='archive-week-summary';weekSummary.textContent=progressResponse.error?'İlerleme bilgisi alınamadı':weekAssigned.length?'🎯 Haftalık etkinlikler: '+weekFinished+'/'+weekAssigned.length+' tamamlandı':'📘 Bu haftada etkinlik bulunmuyor';panel.insertBefore(weekSummary,group);
