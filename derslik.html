@@ -412,7 +412,7 @@ picker.onchange=()=>{$('password').value='';msg('');$('password').focus()};
 $('signin').onclick=async()=>{
  const identity=loginMode==='student'?picker.value:$('email').value.trim(),pass=$('password').value;
  if(loginMode==='student'&&!identity)return msg('Önce adını listeden seç.');
- if(loginMode==='teacher'&&!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(identity))return msg('Geçerli öğretmen e-posta adresini girin.');
+ if(loginMode==='teacher'&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identity))return msg('Geçerli öğretmen e-posta adresini girin.');
  if(!pass)return msg('Şifreni gir.');
  const isCode=loginMode==='student';
  const button=$('signin');button.disabled=true;msg('Giriş kontrol ediliyor...');
