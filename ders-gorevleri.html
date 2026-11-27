@@ -194,31 +194,84 @@ if(found.video_url){
  }catch(e){console.warn('Geçersiz video bağlantısı')}
 }
 $('introText').textContent=found.explanation||'Konu anlatımı henüz hazırlanmadı.';
-const visuals={'Matematik':'🍕  1 bütün  →  2 yarım  →  4 çeyrek','Türkçe':'📚  ✍️  🇹🇷','Fen Bilimleri':'🦇  🐕  🦉  👀  👂','Hayat Bilgisi':'🧼  🥗  💧  🏃  💤'};
-$('introVisual').textContent=visuals[found.subject]||'🌟';
-$('introVisual').style.cssText='font-size:clamp(30px,5vw,62px);text-align:center;padding:18px;background:linear-gradient(110deg,#fff4c5,#dff8ff);border-radius:18px';
-const scenes={
-'Matematik':[['🍕','Bir pizza bir bütündür.'],['🍕  ➗  2','İki eş parçadan biri yarımdır.'],['🥧  ➗  4','Dört eş parçadan biri çeyrektir.'],['½  =  ¼ + ¼','İki çeyrek bir yarıma eşittir.'],['⭐','Parçalar mutlaka eş olmalıdır!']],
-'Türkçe':[['📚','Kitap okuyarak iyilik ve yardımlaşmayı öğreniriz.'],['🤲','Okuduğumuz metinde merhamet ve dürüstlüğü keşfederiz.'],['✍️','Cümle büyük harfle başlar.'],['🏙️','Ankara ve Ayşe gibi özel adlar büyük harfle yazılır.'],['⭐','Metni oku, ana düşünceyi bul!']],
-'Fen Bilimleri':[['👀 👂','Canlılar çevrelerini farklı duyularıyla algılar.'],['🐕 👃','Köpeklerin koku alma duyusu güçlüdür.'],['🦇 🔊','Yarasalar yankıdan yararlanabilir.'],['🦉 🌙','Baykuşlar az ışıkta görebilir.'],['⭐','Canlılar çevreyi aynı yollarla algılamaz.']],
-'Hayat Bilgisi':[['🧼','Ellerimizi sabunla yıkarız.'],['🥗','Dengeli beslenmek önemlidir.'],['💧','Gün boyunca yeterince su içeriz.'],['🏃 💤','Hareket eder ve düzenli uyuruz.'],['⭐','Sağlıklı alışkanlıkları her gün sürdürürüz.']]};
-let cinemaTimer=null,cinemaStep=0,cinemaPlaying=false;
-const oddEvenLesson=found.subject==='Matematik'&&/tek.{0,20}çift|çift.{0,20}tek|MAT\.3\.1\.[56]/i.test((found.title||'')+' '+(found.outcome||''));
-const cinemaFrames=oddEvenLesson?[['🔢','Sayılar tek veya çift olarak sınıflandırılır.'],['2️⃣ 4️⃣ 6️⃣','Birler basamağı 0, 2, 4, 6, 8 olan sayılar çifttir.'],['1️⃣ 3️⃣ 5️⃣','Birler basamağı 1, 3, 5, 7, 9 olan sayılar tektir.'],['7 + 5 = 12','İki tek sayının toplamı çifttir.'],['8 + 3 = 11','Çift ve tek sayının toplamı tektir.']]:scenes[found.subject]||scenes.Matematik;
-
-function motionArt(subject,stage){
- if(oddEvenLesson)return '<div class="motion-stage"><span class="actor">'+['🔢','2️⃣','1️⃣','➕','✅'][stage]+'</span><span class="spark">✦</span><span class="actor">'+['✨','8️⃣','9️⃣','1️⃣2️⃣','1️⃣1️⃣'][stage]+'</span></div>';
- if(subject==='Matematik'){
- const count=[1,2,4,4,4][stage],fill=[1,1,1,2,1][stage],paths=[];
- const cx=110,cy=85,r=69;
- if(count===1){paths.push('<circle class="highlight" cx="110" cy="85" r="69" fill="#ffab43" stroke="#fff5b7" stroke-width="5"/>')}
- else for(let i=0;i<count;i++){const aa=-Math.PI/2+i*2*Math.PI/count,bb=aa+2*Math.PI/count;let x=cx+r*Math.cos(aa),y=cy+r*Math.sin(aa),x2=cx+r*Math.cos(bb),y2=cy+r*Math.sin(bb);
- paths.push('<path class="slice" d="M110 85 L'+x+' '+y+' A69 69 0 0 1 '+x2+' '+y2+' Z" fill="'+(i<fill?'#ffaf33':'#ffe6b1')+'" stroke="#ffffff" stroke-width="4"/>')}
- return '<div class="motion-stage"><svg viewBox="0 0 220 170" role="img" aria-label="Hareketli kesir modeli">'+paths.join('')+'</svg><span class="spark">'+(['🍕','½','¼','2/4','⭐'][stage])+'</span></div>';
+// Konu anlatımı ders adına değil, öğrenme çıktısına göre seçilir.
+// Böylece yeni bir haftanın kazanımı önceki haftanın sahnelerini kullanamaz.
+const lessonText=(found.title||'')+' '+(found.outcome||'');
+const normalizedLesson=lessonText.toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const hasTopic=re=>re.test(normalizedLesson);
+const variants={
+ clock:{
+ visual:'🕒 03.00 → 🕣 08.30 → 🕥 10.15', clock:true,
+ frames:[['🕒','Analog saatte kısa kol akrep, uzun kol yelkovandır. Akrep saati, yelkovan dakikayı gösterir.'],['🕒','Tam saatlerde yelkovan 12 üzerindedir. Saat üçte akrep 3, yelkovan 12 üzerindedir.'],['🕣','Yelkovan 6 üzerindeyse otuz dakika, yani yarım saat geçmiştir. Saat sekiz buçuk, 08.30 diye yazılır.'],['🕙','Yelkovan 3 üzerindeyse 15 dakika geçmiş, yani çeyrek geçmiştir. 10.15, onu çeyrek geçe demektir.'],['⭐','Dijital saatte soldaki sayı saati, sağdaki iki rakam dakikayı belirtir. Analog ve dijital saatleri eşleştirebilirsin.']]
+ },
+ fraction:{
+ visual:'🍕 1 bütün → 2 yarım → 4 çeyrek',pizza:true,
+ frames:[['🍕','Bir bütün, eksiksiz bir nesnedir. Bir pizzanın tamamı bir bütündür.'],['½','Bir bütünü iki eş parçaya ayırdığımızda her parçaya yarım deriz.'],['¼','Bir bütünü dört eş parçaya ayırdığımızda her parçaya çeyrek deriz.'],['½','İki çeyrek, bir yarım eder. Dört çeyrek ise bir bütün eder.'],['⭐','Kesir modeli oluştururken parçaların eş büyüklükte olması gerekir.']]
+ },
+ odd:{
+ visual:'🔢 2 4 6 8 · 1 3 5 7 9',
+ frames:[['🔢','Sayıları birler basamağına bakarak tek ya da çift olarak sınıflandırırız.'],['2️⃣','Birler basamağı 0, 2, 4, 6 veya 8 ise sayı çifttir.'],['1️⃣','Birler basamağı 1, 3, 5, 7 veya 9 ise sayı tektir.'],['➕','İki tek sayının toplamı çift sayıdır. Örneğin, 7 artı 5 eşittir 12.'],['✅','Tek ve çift sayıları tanımak için sayının son rakamına bakmak yeterlidir.']]
+ },
+ punctuation:{
+ visual:'✍️  .   ?   !   ,',
+ frames:[['✍️','Noktalama işaretleri cümlelerin doğru okunmasını ve anlaşılmasını sağlar.'],['.','Tamamlanmış ve soru anlamı taşımayan cümlelerin sonuna nokta konur. Örneğin: Bugün doğayı keşfettik.'],['?','Soru bildiren cümlelerin sonuna soru işareti konur. Örneğin: Kuşlar nerede yaşıyor?'],['!','Sevinç, korku, şaşkınlık gibi güçlü duyguları anlatan cümlelerin sonuna ünlem konabilir.'],[',','Virgül, eş görevli sözcükleri ayırır. Örneğin: Çantama defter, kalem ve silgi koydum.']]
+ },
+ capitals:{
+ visual:'🔠 Ali · Ankara · Pazartesi',
+ frames:[['🔠','Cümlelerin ilk harfi büyük yazılır. Örneğin: Bugün kitap okudum.'],['👧','Kişi adları büyük harfle başlar. Örneğin: Ayşe ve Ali.'],['🏙️','Şehir ve ülke adları büyük harfle başlar. Örneğin: Ankara ve Türkiye.'],['✍️','Özel adları yazarken büyük harf kullanmayı unutma.'],['✅','Yazdığın cümleleri kontrol et: İlk harf ve özel adlar doğru yazılmış mı?']]
+ },
+ rocks:{
+ visual:'🪨 Kayaçlar · mineraller · madenler',
+ frames:[['🪨','Yerkabuğunda farklı kayaçlar bulunur. Granit ve mermer bunlara örnektir.'],['🔎','Kayaçlar bir ya da birden fazla mineral içerebilir. Mineraller kayaçların özelliklerini etkiler.'],['⛏️','Bazı madenler, yer altındaki mineral ve kayaçlardan elde edilir.'],['🏗️','Madenler ve mineraller günlük yaşamda birçok alanda kullanılır. Kaynakları israf etmemeliyiz.'],['⭐','Kayaç, mineral ve maden kavramlarını örnekleriyle ayırt etmeyi öğreniyoruz.']]
+ },
+ senses:{
+ visual:'🐕 Koku · 🦉 Görme · 🦇 Yankı',
+ frames:[['🌿','Canlılar çevrelerinden bilgi almak için farklı duyu ve özelliklerinden yararlanır.'],['🐕','Köpekler çevrelerini tanırken güçlü koku alma duyularını kullanır.'],['🦇','Yarasalar seslerin yankısını kullanarak yönlerini bulabilir.'],['🦉','Baykuşların görme ve işitme özellikleri karanlıkta avlanmalarına yardımcı olur.'],['⭐','Bütün canlılar çevrelerini aynı biçimde algılamaz. Farklılıkları gözlemleyelim.']]
+ },
+ safety:{
+ visual:'🛡️ Güvenlik · yardım isteme · kişisel bilgiler',
+ frames:[['🛡️','Güvenliğimizi tehdit eden durumları fark etmek ve doğru karar vermek önemlidir.'],['🚦','Trafikte karşıdan karşıya geçerken yaya geçidini kullanır, trafik ışıklarına dikkat ederiz.'],['🙅','Tanımadığımız biri bizi bir yere çağırırsa gitmeyiz. Güvenilir bir yetişkine hemen haber veririz.'],['🔥','Duman veya yangın gibi tehlikelerde güvenli bir yere uzaklaşır ve yetişkinlerden yardım isteriz.'],['🔐','İnternette adres ve şifre gibi kişisel bilgilerimizi paylaşmayız. Tehlikeli bir durumla karşılaşırsak yardım isteriz.']]
+ },
+ health:{
+ visual:'🧼 Temizlik · 🥗 Beslenme · 💤 Uyku',
+ frames:[['🧼','Sağlığımızı korumak için ellerimizi gerektiğinde sabunla yıkarız.'],['🥗','Dengeli ve düzenli beslenmek vücudumuzun ihtiyaçlarını karşılamaya yardımcı olur.'],['💧','Yeterince su içer, temizliğimize özen gösteririz.'],['🏃','Hareket etmek ve yeterli uyumak sağlığımız için önemlidir.'],['💚','Sağlıklı alışkanlıkları her gün sürdürmek kendimize karşı sorumluluğumuzdur.']]
  }
- const arr={'Türkçe':[['📚','✨'],['🤲','📖'],['✍️','🔠'],['🏙️','📝'],['🌟','📚']],'Fen Bilimleri':[['👀','👂'],['🐕','👃'],['🦇','🔊'],['🦉','🌙'],['🌎','🔎']],'Hayat Bilgisi':[['🧼','🫧'],['🥗','🍎'],['💧','🥛'],['🏃','💤'],['💚','⭐']]};
- const actors=(arr[subject]||arr.Türkçe)[stage];
- return '<div class="motion-stage"><span class="actor">'+actors[0]+'</span><span class="spark">✦</span><span class="actor">'+actors[1]+'</span></div>';
+};
+let topic=null;
+if(found.subject==='Matematik')topic=hasTopic(/analog|dijital|saatlerde|mat\.3\.1\.12/)?'clock':hasTopic(/yarim|ceyrek|kesir|mat\.3\.1\.9/)?'fraction':hasTopic(/tek.{0,20}cift|cift.{0,20}tek/)?'odd':null;
+else if(found.subject==='Türkçe')topic=hasTopic(/noktalama|virgul|unlem|soru isareti/)?'punctuation':hasTopic(/buyuk harf|ozel ad/)?'capitals':null;
+else if(found.subject==='Fen Bilimleri')topic=hasTopic(/kayac|maden|mineral|fb\.3\.3\.1/)?'rocks':hasTopic(/cevrelerini|algilama|duyu|fb\.3\.2\.2/)?'senses':null;
+else if(found.subject==='Hayat Bilgisi')topic=hasTopic(/guvenli|tehdit|hb\.3\.2\.2/)?'safety':hasTopic(/saglig|saglik|hb\.3\.2\.1/)?'health':null;
+const activeVariant=topic?variants[topic]:null;
+$('introVisual').textContent=activeVariant?.visual||'📖 Bu kazanım için konu anlatımı hazırlanıyor.';
+$('introVisual').style.cssText='font-size:clamp(25px,4vw,45px);text-align:center;padding:18px;background:linear-gradient(110deg,#fff4c5,#dff8ff);border-radius:18px';
+const cinemaFrames=activeVariant?.frames||[];
+let cinemaTimer=null,cinemaStep=0,cinemaPlaying=false;
+function clockArt(stage){
+ const readings=[[3,0],[3,0],[8,30],[10,15],[7,0]];
+ const [hour,minute]=readings[stage];
+ const hourAngle=hour%12*30+minute*.5, minuteAngle=minute*6;
+ let marks='';
+ for(let i=1;i<=12;i++){const angle=(i*30-90)*Math.PI/180;marks+='<text x="'+(110+70*Math.cos(angle)).toFixed(2)+'" y="'+(95+70*Math.sin(angle)+6).toFixed(2)+'" text-anchor="middle" font-size="17" font-weight="bold" fill="#21365a">'+i+'</text>'}
+ const hand=(angle,length,width,color)=>'<line x1="110" y1="95" x2="'+(110+length*Math.sin(angle*Math.PI/180)).toFixed(2)+'" y2="'+(95-length*Math.cos(angle*Math.PI/180)).toFixed(2)+'" stroke="'+color+'" stroke-width="'+width+'" stroke-linecap="round"/>';
+ return '<div class="motion-stage"><svg viewBox="0 0 220 200" role="img" aria-label="Analog saat modeli"><circle cx="110" cy="95" r="87" fill="#fffef5" stroke="#fde6a1" stroke-width="8"/>'+marks+hand(hourAngle,49,8,'#3043aa')+hand(minuteAngle,65,5,'#dc5e4d')+'<circle cx="110" cy="95" r="7" fill="#344369"/></svg><span class="spark">'+String(hour).padStart(2,'0')+'.'+String(minute).padStart(2,'0')+'</span></div>';
+}
+function motionArt(subject,stage){
+ if(!activeVariant)return '<div class="motion-stage"><span class="actor">📖</span></div>';
+ if(activeVariant.clock)return clockArt(stage);
+ if(activeVariant.pizza){
+  const count=[1,2,4,4,4][stage],fill=[1,1,1,2,1][stage],paths=[],cx=110,cy=85,r=69;
+  if(count===1)paths.push('<circle cx="110" cy="85" r="69" fill="#ffab43" stroke="#fff5b7" stroke-width="5"/>');
+  else for(let i=0;i<count;i++){const aa=-Math.PI/2+i*2*Math.PI/count,bb=aa+2*Math.PI/count;paths.push('<path d="M110 85 L'+(cx+r*Math.cos(aa))+' '+(cy+r*Math.sin(aa))+' A69 69 0 0 1 '+(cx+r*Math.cos(bb))+' '+(cy+r*Math.sin(bb))+' Z" fill="'+(i<fill?'#ffaf33':'#ffe6b1')+'" stroke="white" stroke-width="4"/>')}
+  return '<div class="motion-stage"><svg viewBox="0 0 220 170" role="img" aria-label="Kesir modeli">'+paths.join('')+'</svg><span class="spark">'+['🍕','½','¼','2/4','⭐'][stage]+'</span></div>';
+ }
+ return '<div class="motion-stage"><span class="actor">'+cinemaFrames[stage][0]+'</span><span class="spark">✦</span><span class="actor">'+['📚','🔎','💡','🧠','✅'][stage]+'</span></div>';
+}
+if(!activeVariant){
+ $('lessonCinema').classList.add('hide');
+ $('cinemaPlay').classList.add('hide');
+ $('cinemaStop').classList.add('hide');
+ $('introVisual').classList.remove('hide');
 }
 function showCinemaScene(){const f=cinemaFrames[cinemaStep];$('cinemaArt').innerHTML=motionArt(found.subject,cinemaStep);$('cinemaCaption').textContent=f[1];$('cinemaCount').textContent='Sahne '+(cinemaStep+1)+'/5';$('cinemaFill').style.width=((cinemaStep+1)/5*100)+'%';const c=$('lessonCinema');c.classList.remove('next-scene');void c.offsetWidth;c.classList.add('next-scene');}
 function stopCinema(){cinemaPlaying=false;if(cinemaTimer)clearTimeout(cinemaTimer);cinemaTimer=null;if('speechSynthesis'in window)speechSynthesis.cancel();$('cinemaPlay').textContent='▶ Anlatımı oynat'}
