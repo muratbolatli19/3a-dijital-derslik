@@ -1,1 +1,38 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Okuma Anlama Merkezi · 3/A Dijital Derslik</title><style>*{box-sizing:border-box}body{margin:0;font:16px system-ui,Arial;background:linear-gradient(135deg,#ecf0ff,#e9faff 55%,#fff5e6);color:#24375f}.wrap{max-width:940px;margin:25px auto;padding:14px}.banner{padding:26px;border-radius:22px;background:linear-gradient(110deg,#4b42b6,#1b9ca9);color:#fff;box-shadow:0 10px 26px #4244b72a}.banner h1{margin:8px 0;font-size:clamp(25px,5vw,36px)}.banner a{color:#fff}.note{font-weight:650;padding:15px 0}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}.card{border:2px solid #d7ddff;border-radius:20px;background:white;padding:18px;box-shadow:0 10px 22px #263b8a16;display:flex;flex-direction:column;gap:9px}.art{display:grid;place-items:center;background:linear-gradient(130deg,#cdeef9,#e6e5ff);border-radius:15px;min-height:156px;font-size:65px}.art.green{background:linear-gradient(130deg,#c4f0dc,#ddedff)}h2{font-size:21px;margin:5px 0}p{line-height:1.5;margin:4px 0}.meta{color:#65718c;font-size:14px}.button{display:inline-block;border-radius:12px;background:#5752cb;color:white;text-decoration:none;font-weight:750;padding:12px 17px;margin-top:auto;text-align:center}.button:hover{background:#37339c}.foot{font-size:13px;margin-top:25px;color:#65718c}</style></head><body><main class="wrap"><header class="banner"><a href="derslik.html">← Dijital Derslik'e dön</a><h1>📚 Okuma Anlama Merkezi</h1><div>Oku · Dinle · Anla · Başar</div></header><p class="note">📖 Hikâyeni seç, metni dikkatle oku veya dinle ve sekiz soruyu cevapla.</p><section class="cards"><article class="card"><div class="art" aria-label="Anahtar hikâyesi">🌳 🔑 🏫</div><h2>Kayıp Anahtarın Sırrı</h2><p>Ali ve Zeynep, okul bahçesinde buldukları anahtarın sahibini arıyor. Dürüstlük ve yardımlaşma üzerine bir hikâye.</p><p class="meta">3. sınıf · 5 bölüm · 8 soru · 30 puana kadar</p><a class="button" href="okuma-anlama.html">🔑 Hikâyeye Başla</a></article><article class="card"><div class="art green" aria-label="Serçe hikâyesi">🌳 🐦 🪺</div><h2>Küçük Serçenin Büyük Yolculuğu</h2><p>Zeynep ve Emir, okul bahçesinde yardıma ihtiyacı olan küçük bir serçe buluyor. Merhamet ve doğru davranış üzerine bir hikâye.</p><p class="meta">3. sınıf · 5 bölüm · 8 soru · 30 puana kadar</p><a class="button" href="okuma-anlama-serce.html">🐦 Hikâyeye Başla</a></article></section><p class="foot">Öğrenci değerlendirme sonuçları yalnızca giriş yapılan öğrenci hesabına kaydedilir. Bir hikâyeden alınan puan ilk tamamlamada kaydedilir.</p></main></body></html>
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Okuma Anlama Merkezi | 3/A Dijital Derslik</title>
+<style>
+:root{font-family:system-ui,-apple-system,Arial,sans-serif;color:#293752;background:#f8f8f4}*{box-sizing:border-box}
+body{margin:0;background:#f8f8f4}.wrap{max-width:1080px;margin:auto;padding:20px 20px 48px}
+.brand{background:#fff;border:1px solid #e2e8df;box-shadow:0 4px 15px #29465c0d;border-radius:20px;padding:17px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brand img{display:block;width:min(100%,315px);max-height:80px;object-fit:contain;object-position:left center}
+.brand a{color:#315e5c;font-size:14px;font-weight:700;text-decoration:none}
+.heading{margin:28px 0 19px}.heading h1{font-size:clamp(27px,4vw,39px);color:#1d335a;margin:0 0 6px}.heading p{color:#5c687d;margin:0;line-height:1.6}
+.kicker{font-size:13px;color:#2a826b;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.card{background:#fff;border:1px solid #e3e6e8;border-radius:21px;overflow:hidden;box-shadow:0 9px 25px #1a354110;display:flex;flex-direction:column;transition:transform .16s,box-shadow .16s}
+.card:hover{transform:translateY(-3px);box-shadow:0 14px 34px #1a35411b}
+.photo{position:relative;aspect-ratio:16/9;overflow:hidden;background:#e5eff2}
+.photo>img.cover{display:block;width:100%;height:100%;object-fit:cover}
+.schoolbrand{position:absolute;right:13px;top:12px;max-width:42%;padding:7px 11px;background:rgba(255,255,255,.94);border-radius:11px;box-shadow:0 3px 14px #0002}
+.schoolbrand img{display:block;width:100%;max-height:49px;object-fit:contain}
+.content{padding:21px 23px 23px;display:flex;flex-direction:column;gap:11px;flex:1}
+.topic{font-size:12px;color:#2a8065;font-weight:800;letter-spacing:.025em}
+.card h2{font-size:clamp(20px,2.3vw,25px);color:#1e3357;margin:0;line-height:1.3}
+.card p{font-size:15px;line-height:1.65;color:#516078;margin:0}
+.details{display:flex;flex-wrap:wrap;gap:7px;margin:5px 0}
+.details span{font-size:13px;background:#f0f5f4;border-radius:20px;color:#3d605d;padding:6px 10px}
+.start{background:#315eaa;border-radius:12px;color:#fff;text-decoration:none;text-align:center;font-weight:800;padding:14px 20px;margin-top:auto}
+.start:hover{background:#234b91}
+.footer{text-align:center;color:#6c7583;font-size:13px;margin-top:29px;line-height:1.6}
+@media(max-width:720px){.wrap{padding:12px 12px 30px}.brand{padding:14px 15px;flex-wrap:wrap;gap:8px}.brand img{max-width:245px}.heading{margin:22px 6px 18px}.cards{grid-template-columns:1fr;gap:17px}.content{padding:17px}.schoolbrand{max-width:43%}}
+</style></head>
+<body><main class="wrap">
+<header class="brand"><img src="suleymaniye-okullari-logo.png" alt="Süleymaniye Okulları orijinal logosu" width="315" height="83"><a href="derslik.html">← Dijital Derslik'e dön</a></header>
+<div class="heading"><div class="kicker">3/A DİJİTAL DERSLİK</div><h1>📚 Okuma Anlama Merkezi</h1><p>Bir hikâye seç, dikkatle oku veya dinle; ardından sorularla öğrendiklerini göster.</p></div>
+<section class="cards" aria-label="Hikâye seçimi">
+<article class="card"><div class="photo"><img class="cover" src="okuma-anahtar-kapak.png" alt="Ali ve Zeynep, Süleymaniye Okulları bahçesinde çınarın altında yıldızlı anahtarı keşfediyor" loading="eager"><div class="schoolbrand"><img src="suleymaniye-okullari-logo.png" alt="Süleymaniye Okulları" loading="lazy"></div></div><div class="content"><div class="topic">🔑 DÜRÜSTLÜK · SORUMLULUK</div><h2>Kayıp Anahtarın Sırrı</h2><p>Ali ve Zeynep, okul bahçesinde buldukları anahtarın sahibini arıyor. Dürüstlük ve yardımlaşma dolu bir yolculuk başlıyor.</p><div class="details"><span>📖 5 bölüm</span><span>🧠 8 soru</span><span>⭐ 30 puana kadar</span></div><a class="start" href="okuma-anlama.html">📖 Hikâyeye Başla</a></div></article>
+<article class="card"><div class="photo"><img class="cover" src="okuma-serce-kapak.png" alt="Zeynep ve Emir, Süleymaniye Okulları bahçesinde küçük serçeye dikkatle yardım ediyor" loading="eager"><div class="schoolbrand"><img src="suleymaniye-okullari-logo.png" alt="Süleymaniye Okulları" loading="lazy"></div></div><div class="content"><div class="topic">🐦 MERHAMET · DOĞA SEVGİSİ</div><h2>Küçük Serçenin Büyük Yolculuğu</h2><p>Zeynep ve Emir, okul bahçesinde yardıma ihtiyacı olan küçük bir serçe buluyor. Doğru yardım etmenin değerini öğreniyorlar.</p><div class="details"><span>📖 5 bölüm</span><span>🧠 8 soru</span><span>⭐ 30 puana kadar</span></div><a class="start" href="okuma-anlama-serce.html">📖 Hikâyeye Başla</a></div></article>
+</section><p class="footer">Oku · Dinle · Anla · Başar<br>Öğrenci puanları, giriş yapılan öğrenci hesabında ayrı ayrı kaydedilir.</p>
+</main></body></html>
