@@ -50,6 +50,10 @@ async function loadGames(){
 
 /* PDF-KITAPLIK-DORT-DERS-2026 */
 const pdfKitaplik=[
+{"subject":"Fen Bilimleri","title":"Kayaçlar, Madenler ve Mineraller","file":"hafta10-fen.pdf","week":"2026-11-23"},
+{"subject":"Hayat Bilgisi","title":"Güvenliğimi Tehdit Eden Durumlar","file":"hafta10-hayat.pdf","week":"2026-11-23"},
+{"subject":"Matematik","title":"Analog ve Dijital Saatler","file":"hafta10-matematik.pdf","week":"2026-11-23"},
+{"subject":"Türkçe","title":"Noktalama İşaretleri","file":"hafta10-turkce.pdf","week":"2026-11-23"},
  {subject:'Türkçe',title:'Büyük Harflerin Kullanımı',file:'Dijital_Derslik_Turkce_Buyuk_Harfler_PDF_Testi.pdf'},
  {subject:'Matematik',title:'Bütün, Yarım ve Çeyrek',file:'Dijital_Derslik_Matematik_Butun_Yarim_Ceyrek_PDF_Testi.pdf'},
  {subject:'Fen Bilimleri',title:'Tehlike Radarı',file:'Dijital_Derslik_Fen_Bilimleri_Tehlike_Radari_PDF_Testi.pdf'},
@@ -64,7 +68,7 @@ async function load(){
  const root=$('tests');root.replaceChildren();
  const allItems=(tests||[]).filter(t=>t.mode!=='game'&&(isPdf?!!t.pdf_url:t.questions.length>0));
  const weekOf=t=>{const d=new Date(t.created_at);if(!Number.isFinite(+d))return 'Tarihsiz';d.setUTCDate(d.getUTCDate()-(d.getUTCDay()+6)%7);return d.toISOString().slice(0,10)};
- const weeks=[...new Set(allItems.map(weekOf).concat(isPdf?['2026-10-26']:[]))].sort().reverse();
+ const weeks=[...new Set(allItems.map(weekOf).concat(isPdf?['2026-11-23','2026-10-26']:[]))].sort().reverse();
  for(const [wi,week] of weeks.entries()){const weekBox=document.createElement('details');weekBox.className='subject-fold';weekBox.open=wi===0;const wh=document.createElement('summary');wh.textContent='📅 '+week+' haftası'+(wi===0?' · Son hafta':'');weekBox.append(wh);root.append(weekBox);const items=allItems.filter(t=>weekOf(t)===week);
  for(const subject of ['Türkçe','Matematik','Fen Bilimleri','Hayat Bilgisi']){
   const fold=document.createElement('details');fold.className='subject-fold';fold.open=false;
@@ -79,8 +83,8 @@ async function load(){
    fold.append(p);
   }
   if(isPdf){
-    const local=pdfKitaplik.find(x=>x.subject===subject);
-    if(week==='2026-10-26' && local && !matching.some(t=>t.title===local.title)){
+    const local=pdfKitaplik.find(x=>x.subject===subject&&(x.week||'2026-10-26')===week);
+    if(local && !matching.some(t=>t.title===local.title)){
       const href='./'+encodeURIComponent(local.file);
       try {const response=await fetch(href,{method:'HEAD',cache:'no-store'});
         if(response.ok){const p=document.createElement('div');p.className='test-card';const title=document.createElement('h3');title.textContent=local.title;p.append(title);const a=document.createElement('a');a.href=href;a.target='_blank';a.rel='noopener noreferrer';a.className='test-download';a.textContent='📥 PDF dosyasını indir';p.append(a);fold.append(p);matching.push(local)}
