@@ -62,7 +62,10 @@ async function load(){
  const tab=new URLSearchParams(location.search).get('tab')||'online',isPdf=tab==='pdf';
  $('testHeading').textContent=isPdf?'📥 İndirilebilir PDF Testler':'📝 Online Testler';
  const root=$('tests');root.replaceChildren();
- const items=(tests||[]).filter(t=>t.mode!=='game'&&(isPdf?!!t.pdf_url:t.questions.length>0));
+ const allItems=(tests||[]).filter(t=>t.mode!=='game'&&(isPdf?!!t.pdf_url:t.questions.length>0));
+ const weekOf=t=>{const d=new Date(t.created_at);if(!Number.isFinite(+d))return 'Tarihsiz';d.setUTCDate(d.getUTCDate()-(d.getUTCDay()+6)%7);return d.toISOString().slice(0,10)};
+ const weeks=[...new Set(allItems.map(weekOf).concat(isPdf?['2026-10-26']:[]))].sort().reverse();
+ for(const [wi,week] of weeks.entries()){const weekBox=document.createElement('details');weekBox.className='subject-fold';weekBox.open=wi===0;const wh=document.createElement('summary');wh.textContent='📅 '+week+' haftası'+(wi===0?' · Son hafta':'');weekBox.append(wh);root.append(weekBox);const items=allItems.filter(t=>weekOf(t)===week);
  for(const subject of ['Türkçe','Matematik','Fen Bilimleri','Hayat Bilgisi']){
   const fold=document.createElement('details');fold.className='subject-fold';fold.open=false;
   const heading=document.createElement('summary');heading.textContent=({'Türkçe':'📚','Matematik':'🧮','Fen Bilimleri':'🔬','Hayat Bilgisi':'🌱'}[subject])+' '+subject;fold.append(heading);
@@ -77,7 +80,7 @@ async function load(){
   }
   if(isPdf){
     const local=pdfKitaplik.find(x=>x.subject===subject);
-    if(local && !matching.some(t=>t.title===local.title)){
+    if(week==='2026-10-26' && local && !matching.some(t=>t.title===local.title)){
       const href='./'+encodeURIComponent(local.file);
       try {const response=await fetch(href,{method:'HEAD',cache:'no-store'});
         if(response.ok){const p=document.createElement('div');p.className='test-card';const title=document.createElement('h3');title.textContent=local.title;p.append(title);const a=document.createElement('a');a.href=href;a.target='_blank';a.rel='noopener noreferrer';a.className='test-download';a.textContent='📥 PDF dosyasını indir';p.append(a);fold.append(p);matching.push(local)}
@@ -85,10 +88,11 @@ async function load(){
     }
   }
   if(!matching.length){const empty=document.createElement('p');empty.textContent='Bu derste henüz '+(isPdf?'PDF test':'online test')+' bulunmuyor.';fold.append(empty)}
-  root.append(fold);
+  weekBox.append(fold);
+ }
  }
 }
-function start(t){$('quizResult').classList.add('hidden');active=t;answers=Array(t.questions.length).fill(null);$('quizTitle').textContent=t.title;$('questions').replaceChildren();t.questions.forEach((q,i)=>{const p=document.createElement('div');p.className='panel';const h=document.createElement('h3');h.textContent=(i+1)+'. '+q.prompt;p.append(h);(q.options||[]).forEach((o,k)=>{const b=document.createElement('button');b.className='option';b.textContent=String.fromCharCode(65+k)+') '+o;b.onclick=()=>{answers[i]=k;p.querySelectorAll('button').forEach(z=>z.classList.remove('selected'));b.classList.add('selected')};p.append(b)});$('questions').append(p)});$('quiz').classList.remove('hidden');$('quiz').scrollIntoView({behavior:'smooth'})}
+function start(t){$('quizResult').classList.add('hidden');active=t;answers=Array(t.questions.length).fill(null);$('quizTitle').textContent=t.title;$('questions').replaceChildren();t.questions.forEach((q,i)=>{const p=document.createElement('div');p.className='panel';const h=document.createElement('h3');h.textContent=(i+1)+'. '+q.prompt;p.append(h);(q.options||[]).forEach((o,k)=>{const b=document.createElement('button');b.className='option';b.textContent=String.fromCharCode(65+k)+') '+o;b.onclick=async()=>{if(answers[i]!==null)return;const buttons=[...p.querySelectorAll('button')];buttons.forEach(z=>z.disabled=true);try{const check=await api({action:'check',test_id:t.id,index:i,answer:k});answers[i]=k;b.classList.add('selected');buttons[check.correct_index].style.background='#c9f4d9';if(!check.correct)b.style.background='#ffd8d2';const note=document.createElement('p');note.textContent=check.correct?'✅ Tebrikler! Doğru cevap.':'Doğru cevap: '+q.options[check.correct_index];p.append(note);say(check.correct?'Tebrikler '+studentName+'! Doğru cevap.':'Doğru cevap '+q.options[check.correct_index]);}catch(e){buttons.forEach(z=>z.disabled=false);alert('Cevap kontrol edilemedi. Tekrar dene.')}};p.append(b)});$('questions').append(p)});$('quiz').classList.remove('hidden');$('quiz').scrollIntoView({behavior:'smooth'})}
 $('cancel').onclick=()=>{$('quiz').classList.add('hidden')};
 $('submit').onclick=async()=>{if(answers.some(x=>x===null)){$('message').textContent='Bütün soruları cevaplayın.';$('message').classList.remove('hidden');return}$('message').classList.add('hidden');const b=$('submit');b.disabled=true;try{const r=await api({action:'submit',test_id:active.id,answers});const result=$('quizResult');result.replaceChildren();const h=document.createElement('h2');h.textContent='🎉 Test sonucun';const p=document.createElement('p');p.textContent=r.correct+'/'+r.total+' doğru · '+r.score+' puan';result.append(h,p);
  const percent=Math.round(100*r.correct/Math.max(1,r.total));
