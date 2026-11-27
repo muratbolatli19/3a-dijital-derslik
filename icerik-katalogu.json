@@ -255,6 +255,18 @@
       "version": 2,
       "visibility": "shared",
       "published": true
+    },
+    {
+      "id": "fen-maden-kasifleri-v1",
+      "kind": "game",
+      "subject": "Fen Bilimleri",
+      "title": "⛏️ Maden Kâşifleri – Yer Altı Macerası",
+      "description": "30 görev · Kazı, vagon yükleme ve üretim",
+      "learning_outcome": "Kayaçlar ve madenlerin kullanım alanları",
+      "url": "maden-kasifleri.html",
+      "version": 1,
+      "visibility": "shared",
+      "published": true
     }
   ]
 }
